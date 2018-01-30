@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
   char *array1, *array2, *array3;
   int i;
 
+
   printf("calling malloc(10)\n");
   array1 = (char*)dmalloc(10);
   if(array1 == NULL) {
@@ -43,6 +44,10 @@ int main(int argc, char *argv[]) {
   array2[99] = '\0';
 
   printf("String : %s, %s\n",array1, array2);
+  
+  
+  
+  
 
   printf("calling free(940)\n");	
   dfree(array2);
