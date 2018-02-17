@@ -98,7 +98,7 @@ char** ORDER_FILES;
 
 				cout << "READY: cashier " << cashierNum << " sandwich " << myOrder.sandwich << endl;
 
-				// signal maker 
+				// signal maker  -- PPOTENTIAL BUG- FIX IT 
 				thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
 
 				// wait for signal to post next order
