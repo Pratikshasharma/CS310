@@ -126,8 +126,8 @@ char** ORDER_FILES;
 
 
 
-				// wait for signal to post next order
-				thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL); /* To release the lock */
+				// wait for signal to post next order -- probably not needed ?? 
+				// thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL); /* To release the lock */
 
 				// printf(" AFTER WAKE UP %d \n ", cashierNum);
 			// }
@@ -204,7 +204,7 @@ char** ORDER_FILES;
 			// signal the cashier
 			thread_signal(CASHIER_LOCK,lastSandwich);
 
-			// thread_wait(SANDWICHMAKER_LOCK,CV_BOARD_FULL); // wait to print
+			// thread_wait(SANDWICHMAKER_LOCK,CV_BOARD_FULL); 
 			// broadcast order can be posted
 			thread_broadcast(CASHIER_LOCK,CV_BOARD_NOT_FULL);
 
