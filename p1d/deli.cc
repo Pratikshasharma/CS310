@@ -22,8 +22,8 @@ int aliveCashiers=0; // number of alive cashiers
 /* locks */
 unsigned int SANDWICHMAKER_LOCK= 100;
 unsigned int CASHIER_LOCK = 200;
-int CV_BOARD_NOT_FULL = 300;
-int CV_BOARD_FULL = 400;
+unsigned int CV_BOARD_NOT_FULL = 300;
+unsigned int CV_BOARD_FULL = 400;
 
 
 
@@ -34,7 +34,7 @@ struct order {
 };
 
 std::vector<order> ordersOnBoard;
-std::vector<int> leftSandwichOrders; /* store the sandwich orders left for each cashier */
+std::vector<int> leftSandwichOrders; /* store the sandwich orders left for each cashier -- needed??*/ 
 std::vector<std::deque<int> >totalSandwichList;
 
 
@@ -46,8 +46,6 @@ bool isCashierOnBoard(int cashierNum);
 // DEBUG
 void printOrdersOnBoard();
 
-
-
 char** ORDER_FILES;
 
 
@@ -55,9 +53,8 @@ char** ORDER_FILES;
 // When the fewer than the no of cahsiers- then thats the max ordersw
 
 	void cashier(void* args){
-		/* lock the thread first */
-		// printf(" cashier \n");
 
+		/* lock the thread first */
 		// thread_lock(CASHIER_LOCK);
 
 		int cashierNum = (long int) args;
@@ -67,12 +64,12 @@ char** ORDER_FILES;
 		// printf("Sandwich Size  : %d \n", sandwiches.size());
 
 		/* Check if the cashier is alive */
-		while(sandwiches.size()>0  && !isCashierOnBoard(cashierNum)){
+		while(sandwiches.size()>0 ){
 			/* lock the thread */
 			thread_lock(CASHIER_LOCK);
 
 			/*  if the board is full */
-			while(currentOrders >= maxOrders){
+			while(currentOrders >= maxOrders || isCashierOnBoard(cashierNum)){
 				// wait for board to free space
 				thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL);
 			}
@@ -88,13 +85,12 @@ char** ORDER_FILES;
 				// Empty the sandwiches vector
 				sandwiches.pop_front();
 
-				/* add remaining sandwich Orders to the vector */
+				/* add remaining sandwich Orders to the vector -- needed ??*/
 
 				// printf("sandwich size after: %d \n ", sandwiches.size());
 
-				// add order on boarao-d 
+				// add order on board
 				ordersOnBoard.push_back(myOrder);
-				// printf("board size after: %d \n ", ordersOnBoard.size());
 				
 				currentOrders++;
 				// printf("Current orders: %d \n ", currentOrders);
@@ -103,42 +99,31 @@ char** ORDER_FILES;
 
 				// signal new order
 				if(currentOrders == maxOrders){
-					// printf(" SIGNAL BOARD FULL \n");
 					thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
 				}
-				// unlock the sandwichmaker thread
-				// thread_unlock(SANDWICHMAKER_LOCK);
-				// Wait for order to be completed
 
-				// printf(" SHOULD BE HERE \n");
 				// wait for your sandwich to be made 
 
-				// printf("Waiting before  %d\n", myOrder.sandwich);
 				thread_wait(CASHIER_LOCK,myOrder.sandwich);
 
 				// printf("Waiting after  %d\n", myOrder.sandwich);
 
 				cout << "READY: cashier " << cashierNum << " sandwich " << myOrder.sandwich << endl;
 
-				if(sandwiches.size()==0){
-					aliveCashiers--;
-				}
-
-
+				// if(sandwiches.size()==0){
+				// 	aliveCashiers--;
+				// }
 
 				// wait for signal to post next order -- probably not needed ?? 
 				// thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL); /* To release the lock */
 
-				// printf(" AFTER WAKE UP %d \n ", cashierNum);
 			// }
 		}
-		// printf(" sandwichSize %d , %d\n",sandwiches.size(),cashierNum);
-		// printf("alive Cashiers Before %d\n",aliveCashiers);
-		// aliveCashiers--;
-		// printf("alive Cashiers %d\n", aliveCashiers);
-		// signal maker order has been posted
+
+		aliveCashiers--; /* Changed because it did not get decreased properly */
+		
+		// adjust maxOrders
 		if(aliveCashiers < maxOrders && aliveCashiers > 0){
-			// adjust maxOrders
 			maxOrders--;
 			thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
 		}
@@ -173,10 +158,11 @@ char** ORDER_FILES;
 			// unlock if no more alive cashiers
 			if(aliveCashiers ==0){
 				thread_unlock(SANDWICHMAKER_LOCK);
+				return;
 			}
 
 			// get the index of next sandwich 
-			int minimumDiff = 999;
+			int minimumDiff = 1000; /* 999 +1 */
 			int index;
 			for(int i=0; i < ordersOnBoard.size();i++){
 				order myOrder = ordersOnBoard[i];
@@ -211,6 +197,7 @@ char** ORDER_FILES;
 		}
 		// 
 		thread_unlock(SANDWICHMAKER_LOCK);
+
 		return;
 
 	}
