@@ -1,23 +1,34 @@
-#include "interrupt.h" // interrupt_disable(), interrupt_enable()   use for atomicity
+#include "interrupt.h" 
 #include "thread.h"
-
-#include <stdio.h>  // Not sure if we need this one (used for size_t in p0)
-#include <unistd.h> // needed for sbrk
-#include <assert.h> // needed for asserts
+#include <stdio.h>  
+#include <unistd.h> 
+#include <assert.h> 
 #include <stdlib.h>
 #include <sys/mman.h>
 
-
-typedef struct TCB{
-    // Need to add to this:
+/*Need to edit*/
+typedef struct TCB_t{
     ucontext_ptr;
-    }tcb_t;
+    };
+
+/* Each lock has it's own queue of 'waiting' threads, accessed FIFO */
+typedef struct Lock_t{
+    unsigned int lockID; 
+    int BUSY; /*1 if lock busy, 0 if lock free*/
+    std::queue<ucontext_t> lock_queue;
+};
+
+/* Each Conditioned Var has it's sleep_queue of blocked/waiting threads on that CV*/
+typedef struct CV_t{
+    unsigned int cvID;
+    std::queue<ucontext_t> sleep_queue; 
+};
 
 int thread_libinit(){
-    /* A thread is always on one of these three queues, or running */
-    HashSet<int> lock_queue = new HashSet<int>();
-    //Do we put in ucontext's or TCB's for ready_queue?
-    std::queue<ucontext_t> sleep_queue;
+    /*Set of Locks, CVs and ready*/
+    /*Use ucontext_t or TCBs for threads?*/
+    std::set<Lock_t> locks;
+    std::set<CV_t> CVs;
     std::queue<ucontext_t> ready_queue;
    
     // Create TCB parent and intialize:
@@ -43,12 +54,15 @@ int thread_create(thread_startfunc_t func, void *arg){
     // Initialize a context structure for child:
     ucontext_t context;
     getcontext(&context);
+
    // Create TCB child and initialize:
     struct TCB child;
     child.id= arg;
     child.ucontext_ptr = context;
+
     // Direct new thread to use a different stack:
     char *stack = new char[STACK_SIZE];
+
     // Need to make ucontext_ptr
     ucontext_ptr->uc_stack.ss_sp = stack;
     ucontext_ptr->uc_stack.ss_size = STACK_SIZE;
@@ -70,9 +84,18 @@ int thread_yield(){
    // Perform a swap_context();
 }
 
+int thread_wait(unsigned int lockID, unsigned int cvID){
+   
+}
+
+int thread_signal(unsigned int lockID, unsigned int cvID){
+}
+
+int thread_broadcast(unsigned int lockID, unsigned int cvID){
+}
 
 /*Input is lockID*/
-int thread_lock(unsigned int lock){
+int thread_lock(unsigned int lockID){
     interrupt_disable(); 
     
     //if(value == FREE): value = BUSY;
@@ -81,8 +104,9 @@ int thread_lock(unsigned int lock){
     interrupt_enable();
 }
 
+
 /*Input is lockID*/
-int thread_unlock(unsigned int lock){
+int thread_unlock(unsigned int lockID){
     interrupt_disable();
 
     // value = FREE;
@@ -93,5 +117,6 @@ int thread_unlock(unsigned int lock){
 
     interrupt_enable();
 }
+
 
 
