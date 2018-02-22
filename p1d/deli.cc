@@ -124,6 +124,8 @@ char** ORDER_FILES;
 					aliveCashiers--;
 				}
 
+
+
 				// wait for signal to post next order
 				thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL); /* To release the lock */
 
@@ -140,7 +142,7 @@ char** ORDER_FILES;
 			maxOrders--;
 			thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
 		}
-		// unlock thread from cashier
+		// unlock thread from cashiser
 		thread_unlock(CASHIER_LOCK);
 
 		// printf(" maxOrders %d\n", maxOrders);
