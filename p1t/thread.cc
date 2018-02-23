@@ -122,8 +122,11 @@ extern int thread_yield(void){
 		return -1;
 	}
 
+	new_context=readyQueue.pop_front();
+	//TODO: figure how to store context pointer in curr_TCB 
 
- 	swapcontext(curr_TCB->context,readyQueue.front());
+
+ 	swapcontext(old_context,new_context);
 
 
 }
@@ -150,8 +153,11 @@ int start(thread_startfunc_t func,void *arg){
 	//switch context.
 	swapcontext(old_context,new_context);
 
+	// TODO
 
-	//Clean up here and remove stack. Will come and clean up.
+	//Clean up here and remove stack. Will come and clean up
+
+
 
 
 
