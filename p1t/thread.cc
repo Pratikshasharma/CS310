@@ -49,8 +49,8 @@ static bool HAS_INIT=false;// Boolean to make sure we don't initialize thread li
 int start(thread_startfunc_t func, void *arg); //The stub Function as described in lecture!
 
 
-static std::unordered_map<std::integer,Lock_t*> allLocks; //A Hashmap of each lockID to its Lock_t (which includes queue and status) 
-static std::unordered_map<std::integer,CV_t*> allCVs; //A Hashmap of each cvID to its CV_t (which includes each's sleep queue) -- CV_t maybe not necessary
+static std::unordered_map<unsigned int, Lock_t*> allLocks; //A Hashmap of each lockID to its Lock_t (which includes queue and status) 
+static std::unordered_map<unsigned int, CV_t*> allCVs; //A Hashmap of each cvID to its CV_t (which includes each's sleep queue) -- CV_t maybe not necessary
 
 extern int thread_libinit(thread_startfunc_t func, void *arg){
 	if (HAS_INIT==true)
@@ -202,59 +202,69 @@ int thread_lock(unsigned int lockID){
     interrupt_disable(); 
 
     //Note: Lock_t->lockID gives the lockID.  Lock_t->BUSY gives the status. Lock_t->lock_queue gives its queue
+ 
+    // if not in map of locks, create it:
+    if (allLocks.find(lockID) == allLocks.end())
 
-    auto search = allLocks.find(lockID); // Map of all locks from <lockIDs : Lock_t>
-    if(search!=allLocks.end()) // lockID is found in map
-    { 
-        //If the lock is free then thread aquires it.
-        if(!search->second->BUSY) //->Second gives the value at key=lockID
-        { 
-            search->second->BUSY=1; // EDIT? Is this correct syntax for Updating a property of a value in allLocks?
-        }
+       {
+
+              auto new_lock = new Lock_t();
+              new_lock->BUSY = 0; // or should it be 1?
+              new_lock->lockID = lockID;
+              allLocks.insert({ lockID, new_lock });
+
+       }
+    // Now it is in the map
+    auto lock = allLocks[lockID];
+
+    if (!lock->BUSY)
+       {
+              //if(value == FREE): value = BUSY
+              lock->BUSY = 1;
+       }
 	
-	//Elif the lock is busy then current thread is pushed to the lock_queue. We perform a swap context.
-	else
+     //Elif the lock is busy then current thread is pushed to the lock_queue. We perform a swap context. 
+     else
         { 
-          
-	  lock_queue.push_back(curr_TCB);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
+	  lock->lock_queue.push_back(curr_TCB);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
 
-	  new_context=readyQueue.pop_front(); //Pop off front of ready 
-
-	  //TODO(same as above): figure how to store context pointer in curr_TCB 
+	  auto next_ready =readyQueue.front(); 
+          readyQueue.pop_front();  //Pop off front of ready 
+	  //TODO: figure how to store context pointer in curr_TCB & next_ready
 
  	  swapcontext(old_context,new_context);  //RUNS FRONT OF READY QUEUE
 
 	}
 
-    }
-
-    else //ELSE if lockID is not in the map.
-    {
-        //Then initialize a new lock, add to the map and aquire it:
-
-        Lock_t *newlock = new Lock_t; //to avoid copying lock_t
-        newlock->id = lockID; 
-        newlock->status = 1; // SET LOCK TO BUSY
-        //newlock->lock_queue =; Is this auto initialized to empty?
-
-        allLocks.insert(std::pair<int,Lock_t*>(lockID, newlock)); //Insert this lockID : newlock into the map.
-    }
-
     interrupt_enable();
+    return 0;
 }
 
 
-/*Input is lockID*/
+/*Input is lockID - Somewhere need to make a stub so wait() can call unlock*/
 int thread_unlock(unsigned int lockID){
     interrupt_disable();
+    if (allLocks.find(lockID) != allLocks.end()) //If the lock is in the map:
+    {
+        auto lock = allLocks[lockID]; // Get lockID from the map. 
+        lock->BUSY = 0; // Set the lock to free!
 
-    // value = FREE;
-    // if thread is waiting for lock{ 
-    //   t = lock_queue.pop() 
-    //   put t on the ready queue
-    //   value = BUSY;}
+        if(!(lock->lock_queue.empty()) ) // IF a thread is waiting on the lock queue
+        {
+        
+        auto t = lock->lock_queue.front(); // Store thread_TCB from the top of lock queue 
+        lock->lock_queue.pop_front(); // Pops off thread from top the lock queue. 
+
+        readyQueue.push_back(t); // Put t from lockqueue on back of ready queue  BLOCKED -> READY QUEUE
+
+        lock->BUSY = 1; // Leave lock as busy, and at some time itll be called (Hand off locks from lecture)
+        }
+    }
+
+    // else lockID not in the map, than no lock to unlock-> do nothing?
 
     interrupt_enable();
+    return 0;
 }
 
 
