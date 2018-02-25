@@ -1,16 +1,17 @@
-//g++ -o deli thread.o deli.cc libinterrupt.a -ldl
-
 #include "thread.h"
-// #include "interrupt.h"
+#include "interrupt.h"
 #include <stdlib.h>
-#include <iostream>
 #include <string.h>
+#include <stdio.h>
 #include <ucontext.h>
 #include <deque>
+//#include <unordered_map>
+#include <iostream>
+#include <map>
 
 using namespace std;
 
- ucontext_t *ucontext_ptr;
+ucontext_t *ucontext_ptr;
    
     
 
@@ -25,12 +26,15 @@ static ucontext_t *old_context;
 static std::deque<ucontext_t*> readyQueue ;
 static ucontext_t *curr=new ucontext_t;//The thread currently running.
 
-
-
 static bool HAS_INIT=false;// Boolean to make sure we don't initialize thread library twice
 
 
 int start(thread_startfunc_t func, void *arg); //The stub Function as described in lecture!
+
+
+static map< unsigned int, std::deque<ucontext_t*> > allLocks; //A Hashmap of each lockID to lock_queue. The first item of the lock_queue is the lock that has aquired the ucontext_t. 
+
+static map<std::pair<unsigned int, unsigned int>, std::deque<ucontext_t*> > monitors; //A Hashmap of each Monitor / mutex to the cv_queue. 
 
 
 extern int thread_libinit(thread_startfunc_t func, void *arg){
@@ -82,7 +86,7 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	//modify context pointer
 	makecontext(parent, (void (*)()) start, 2, func, arg);
 
-	curr=old_context;
+	curr=parent;
 
 	if (swapcontext(old_context, parent)==-1)
 	{
@@ -129,7 +133,6 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 extern int thread_create(thread_startfunc_t func, void *arg){
 	//interrupt_disable();
 	if (HAS_INIT==false)
-
 	{
     	//interrupt_enable();
     
@@ -137,13 +140,12 @@ extern int thread_create(thread_startfunc_t func, void *arg){
 	}
     
 	//Declare child thread:
-	ucontext_t *child=new ucontext_t;
+	ucontext_t *child = new ucontext_t;
     
 	//child thread initialization from curr context
 	int err_get = getcontext(child);
 	if (err_get==-1)
-	{
-    
+	{ 
     	//interrupt_enable();
     	return -1;
 	}
@@ -170,12 +172,11 @@ extern int thread_create(thread_startfunc_t func, void *arg){
 
 extern int thread_yield(void){
    // interrupt_disable();
-	if (HAS_INIT==false)
-	{
-    	//interrupt_enable();
+    if (HAS_INIT==false)
+    {
+        //interrupt_enable();
     	return -1;
-	}
-    
+    }
     
 
     //cout <<curr<<'\n';
@@ -183,9 +184,8 @@ extern int thread_yield(void){
 
     
     if(readyQueue.empty()){
-    return 0;
-
-}
+       return 0;
+    }
    
     
     ucontext_t *oldOne;
@@ -194,12 +194,12 @@ extern int thread_yield(void){
     curr=readyQueue.front();
     readyQueue.pop_front();
     
-   	 readyQueue.push_back(oldOne);
+    readyQueue.push_back(oldOne);
     //cout << "Size is"<<readyQueue.size()<<'\n';
     
     
 	//TODO:
-	if (swapcontext(oldOne,curr)==-1)
+    if (swapcontext(oldOne,curr)==-1)
 	{
     	//interrupt_enable();
     
@@ -207,13 +207,9 @@ extern int thread_yield(void){
 	}
    	// interrupt_enable();
   	 
-    
-    
-    
-    
-	 
+
  	//interrupt_enable();
- 	return 0;
+    return 0;
 
 }
 //Stub Function
@@ -227,7 +223,6 @@ int start(thread_startfunc_t func,void *arg){
     	return -1;
 	}
 
-	 
     
 	func(arg);
 
@@ -247,12 +242,147 @@ int start(thread_startfunc_t func,void *arg){
 
 
 
+//static map<std::pair<unsigned int, unsigned int>, std::deque<thread_TCB*> > monitors;
+int thread_wait(unsigned int lockID, unsigned int cvID){
+  
+   //Error: The thread tries to unlock a lock it doesn't have:
+   if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TLB that currently holds the lock. 
+   {
+       return -1; //error
+   }
+   
+   std::pair<unsigned int, unsigned int> new_pair (lockID, cvID);
+
+   if( monitors.find(new_pair) == monitors.end() ) // if pair / lockID-cvID is not found
+   {
+       std::deque<ucontext_t*> new_queue; 
+       monitors.insert( std::make_pair(new_pair, new_queue) ); //then make the pair
+   }	
+
+   std::deque<ucontext_t*> sleep_queue = monitors[new_pair]; // get queue associated w/pair
+   
+   /* Perform switch stuff: */
+   ucontext_t* old_thread; // store the current thread. *** note is it okay that old_TCB is local?***
+   old_thread = curr;
+	  
+   if(readyQueue.empty())
+   {
+	  return -1;// can't pop from an empty Q --or should it be 0?
+   }
+
+   curr = readyQueue.front(); //changes curr -> to front of ready list
+   readyQueue.pop_front();
+   
+   sleep_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF PAIR"S SLEEP_QUEUE
+
+   swapcontext(old_thread, curr); 
+  
+   return 0;
+}
+
+
+
+int thread_signal(unsigned int lockID, unsigned int cvID){
+   // Put head of cvID's sleep_queue on the tail of the ready queue BLOCKED -> READY
+
+   return 0;
+}
+
+int thread_broadcast(unsigned int lockID, unsigned int cvID){
+   // Put all of the cvID's sleep_queue on the ready queue. BLOCKED -> READY
+   return 0;
+}
 
 
 
 
+/*Input is lockID*/
+
+//static std::unordered_map<unsigned int, std::deque<thread_TCB*> > allLocks; <---note this is above
+int thread_lock(unsigned int lockID){
+    interrupt_disable(); 
+
+    // if not in map of locks, create it:
+    if (allLocks.find(lockID) == allLocks.end())
+        {
+              std::deque<ucontext_t*> new_queue;
+              allLocks.insert(std::make_pair(lockID, new_queue)); //***SYNTAX CHECK
+	}
+
+    // Now it is in the map
+    std::deque<ucontext_t*> lock_queue = allLocks[lockID];
+    
+    if( lock_queue.front() == curr ) //Error: Thread tries to aquire a lock it already has
+       {
+	     return -1; 
+       }
+
+    if ( lock_queue.empty() ) //if(Lock == FREE): curr aquires the lock!
+       {
+              lock_queue.push_front(curr); // put curr at the front of lock_queue, curr aquired the lock!
+       }
+	
+     //Elif the lock is busy then current thread is pushed to the lock_queue. We perform a swap context. 
+     else
+        { 
+          ucontext_t* old_thread; // store the current thread. *** note is it okay that this is local?***
+          old_thread = curr;
+	  
+          if(readyQueue.empty())
+	  {
+	  return -1;
+          }
+
+          curr = readyQueue.front(); //changes curr to front of ready list
+          readyQueue.pop_front();
+
+	  lock_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
+
+ 	  swapcontext(old_thread, curr);  //RUNS FRONT OF READY QUEUE
+
+	}
+
+    interrupt_enable();
+    return 0;
+}
 
 
+//Input is lockID - Somewhere need to make a stub so wait() can call unlock
+int thread_unlock(unsigned int lockID){
+    interrupt_disable();
+
+    if (allLocks.find(lockID) != allLocks.end()) //If the lock is in the map:
+    {
+        //Error: The thread tries to unlock a lock it doesn't have:
+        if( allLocks[lockID].front() != curr or allLocks[lockID].empty() )
+        {
+          return -1; //error
+        }
+        std::deque<ucontext_t*> lock_queue = allLocks[lockID]; // Get lockID from the map. 
+	
+        allLocks[lockID].pop_front(); // Current thread releases the lock! But keeps running. (aquired lockID == TLB at front of it's lock_queue)
+	
+        if(!(lock_queue.empty()) ) // IF a thread is waiting on the lock queue: BLOCKED/lQ -> READY QUEUE & AQUIRES LOCK
+        {
+        
+        ucontext_t* t = lock_queue.front(); // Store thread_TCB from the top of lock queue 
+        //lock_queue.pop_front(); //nvm DON'T pop this TCB, keep at top of lock queue as t aquired the lock! 
+        // Leave lock as aquired by this thread! (Hand off locks from lecture)
+
+        readyQueue.push_back(t); // Put t from lockqueue on back of ready queue  BLOCKED -> READY QUEUE
+
+        }
+    }
+
+    // else lockID not in the map, than no lock to unlock-> user error return -1.
+    else
+    {
+        return -1;
+    }
+
+    interrupt_enable();
+    return 0;
+}
 
 
 
