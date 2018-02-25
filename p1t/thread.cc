@@ -246,7 +246,7 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
   
    //IMPORTANT / TO ADD - CALL UNLOCK(lockID)!! (I think we might need a stub instead of something else?)
    //Error: The thread tries to unlock a lock it doesn't have:
-   if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TLB that currently holds the lock. 
+   if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TCB that currently holds the lock. 
    {
        return -1; //error
    }
@@ -259,7 +259,7 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
        monitors.insert( std::make_pair(new_pair, new_queue) ); //then make the pair
    }	
 
-   std::deque<ucontext_t*> sleep_queue = monitors[new_pair]; // get queue associated w/pair
+   std::deque<ucontext_t*>& sleep_queue = monitors[new_pair]; // get queue associated w/pair
    
    /* Perform switch stuff: */
    ucontext_t* old_thread; // store the current thread. *** note is it okay that old_TCB is local?***
@@ -277,7 +277,7 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
 
    swapcontext(old_thread, curr); 
   
-   return 0;
+   //return 0;
 }
 
 
@@ -310,7 +310,7 @@ int thread_lock(unsigned int lockID){
 	}
 
     // Now it is in the map
-    std::deque<ucontext_t*> lock_queue = allLocks[lockID];
+    std::deque<ucontext_t*>& lock_queue = allLocks[lockID];
     
     if( lock_queue.front() == curr ) //Error: Thread tries to aquire a lock it already has
        {
@@ -320,6 +320,7 @@ int thread_lock(unsigned int lockID){
     if ( lock_queue.empty() ) //if(Lock == FREE): curr aquires the lock!
        {
               lock_queue.push_front(curr); // put curr at the front of lock_queue, curr aquired the lock!
+	      return 0;
        }
 	
      //Elif the lock is busy then current thread is pushed to the lock_queue. We perform a swap context. 
@@ -328,7 +329,7 @@ int thread_lock(unsigned int lockID){
           ucontext_t* old_thread; // store the current thread. *** note is it okay that this is local?***
           old_thread = curr;
 	  
-          if(readyQueue.empty())
+          if(readyQueue.empty()) //person aquired lock, can't be on ready, can't be on lock, can't be running -> must be waiting.
 	  {
 	       return -1;
           }
@@ -358,7 +359,7 @@ int thread_unlock(unsigned int lockID){
         {
           return -1; //error
         }
-        std::deque<ucontext_t*> lock_queue = allLocks[lockID]; // Get lockID from the map. 
+        std::deque<ucontext_t*>& lock_queue = allLocks[lockID]; // Get lockID from the map. 
 	
         allLocks[lockID].pop_front(); // Current thread releases the lock! But keeps running. (aquired lockID == TLB at front of it's lock_queue)
 	
