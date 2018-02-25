@@ -8,7 +8,12 @@ using namespace std;
 int g=0;
 
 void loop(void *a) {
-  thread_lock(2);
+  //thread_lock(2);
+
+  //if(thread_wait(2,1)){
+   //  cout << "thread_wait failed \n";
+   //  exit(1);
+  //}
 
   char *id;
   int i;
@@ -24,7 +29,7 @@ void loop(void *a) {
     }
   }
 
- thread_unlock(2);
+ //thread_unlock(2);
 }
 
 void parent(void *a) {
