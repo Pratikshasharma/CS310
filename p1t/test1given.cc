@@ -8,6 +8,8 @@ using namespace std;
 int g=0;
 
 void loop(void *a) {
+  thread_lock(2);
+
   char *id;
   int i;
 
@@ -16,11 +18,13 @@ void loop(void *a) {
 
   for (i=0; i<5; i++, g++) {
     cout << id << ":\t" << i << "\t" << g << endl;
-    if (thread_yield()) {
+    if (thread_yield()) { // if thread_yield() not equal to
       cout << "thread_yield failed\n";
       exit(1);
     }
   }
+
+ thread_unlock(2);
 }
 
 void parent(void *a) {
