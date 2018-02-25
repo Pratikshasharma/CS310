@@ -241,10 +241,10 @@ int start(thread_startfunc_t func,void *arg){
 }
 
 
-
 //static map<std::pair<unsigned int, unsigned int>, std::deque<thread_TCB*> > monitors;
 int thread_wait(unsigned int lockID, unsigned int cvID){
   
+   //IMPORTANT / TO ADD - CALL UNLOCK(lockID)!! (I think we might need a stub instead of something else?)
    //Error: The thread tries to unlock a lock it doesn't have:
    if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TLB that currently holds the lock. 
    {
@@ -300,7 +300,7 @@ int thread_broadcast(unsigned int lockID, unsigned int cvID){
 
 //static std::unordered_map<unsigned int, std::deque<thread_TCB*> > allLocks; <---note this is above
 int thread_lock(unsigned int lockID){
-    interrupt_disable(); 
+    //interrupt_disable(); 
 
     // if not in map of locks, create it:
     if (allLocks.find(lockID) == allLocks.end())
@@ -330,7 +330,7 @@ int thread_lock(unsigned int lockID){
 	  
           if(readyQueue.empty())
 	  {
-	  return -1;
+	       return -1;
           }
 
           curr = readyQueue.front(); //changes curr to front of ready list
@@ -342,14 +342,14 @@ int thread_lock(unsigned int lockID){
 
 	}
 
-    interrupt_enable();
+    //interrupt_enable();
     return 0;
 }
 
 
 //Input is lockID - Somewhere need to make a stub so wait() can call unlock
 int thread_unlock(unsigned int lockID){
-    interrupt_disable();
+    //interrupt_disable();
 
     if (allLocks.find(lockID) != allLocks.end()) //If the lock is in the map:
     {
@@ -380,7 +380,7 @@ int thread_unlock(unsigned int lockID){
         return -1;
     }
 
-    interrupt_enable();
+    //interrupt_enable();
     return 0;
 }
 
