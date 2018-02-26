@@ -109,7 +109,7 @@ interrupt_enable();
     
 	curr=readyQueue.front();
 	readyQueue.pop_front();
-	cout << "I did reached cleanup ON WHILE LOOP END\n";
+	//cout << "I did reached cleanup ON WHILE LOOP END\n";
 
     interrupt_disable();
 	//TODO:Switch to another thread
