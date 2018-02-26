@@ -14,16 +14,16 @@ using namespace std;
 ucontext_t *ucontext_ptr;
    
     
-
 //DECLARE SHARED VARIABLES WITH STATIC
 /*
 
 Use this two to swap context
 */
+
 static ucontext_t *old_context;
 
 
-static std::deque<ucontext_t*> readyQueue ;
+static std::deque<ucontext_t*> readyQueue;
 static ucontext_t *curr=new ucontext_t;//The thread currently running.
 
 static bool HAS_INIT=false;// Boolean to make sure we don't initialize thread library twice
@@ -38,10 +38,10 @@ static map<std::pair<unsigned int, unsigned int>, std::deque<ucontext_t*> > moni
 
 
 extern int thread_libinit(thread_startfunc_t func, void *arg){
-	//interrupt_disable();
+	interrupt_disable();
 	if (HAS_INIT==true)
 	{
-   	// interrupt_enable();
+   	 interrupt_enable();
     	return -1;
 
 	}
@@ -53,7 +53,7 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 
 	if (getcontext(old_context)==-1)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     	return -1;
 	}
     
@@ -72,7 +72,7 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	int err_get = getcontext(parent);
 	if (err_get==-1)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     	return -1;
 	}
 
@@ -90,13 +90,14 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 
 	if (swapcontext(old_context, parent)==-1)
 	{
-   	// interrupt_enable();
+   	 interrupt_enable();
     	return -1;
 	}
 
 	//DELETE THREADS IF OLD_CONTEXT IS EVER REACTIVATED
     
 	// TODO: CLEAN UP AND FREE SPACE.
+interrupt_enable();
     
    while(!(readyQueue.empty())){
     
@@ -110,19 +111,20 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	readyQueue.pop_front();
 	cout << "I did reached cleanup ON WHILE LOOP END\n";
 
-    
+    interrupt_disable();
 	//TODO:Switch to another thread
    if (swapcontext(old_context,curr)==-1)
 	{
     
-    	//interrupt_enable();
+    	interrupt_enable();
     	return -1;
 	}
+interrupt_enable();
     
 
 }
 
-    
+    	//interrupt_enable();
     	cout << "Thread library exiting.\n";
     	exit(0);
 
@@ -131,10 +133,10 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 }
 
 extern int thread_create(thread_startfunc_t func, void *arg){
-	//interrupt_disable();
+	interrupt_disable();
 	if (HAS_INIT==false)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     
     	return -1;
 	}
@@ -146,11 +148,11 @@ extern int thread_create(thread_startfunc_t func, void *arg){
 	int err_get = getcontext(child);
 	if (err_get==-1)
 	{ 
-    	//interrupt_enable();
+    	interrupt_enable();
     	return -1;
 	}
 
-	//child->DONE=false;
+	
 	char *stack=new char[STACK_SIZE];
 	child->uc_stack.ss_sp=stack;
 	child->uc_stack.ss_size=STACK_SIZE;
@@ -163,7 +165,7 @@ extern int thread_create(thread_startfunc_t func, void *arg){
     
 
 	readyQueue.push_back(child);//PUSH TO BACK OF READY QUEUE.
-	//interrupt_enable();
+	interrupt_enable();
 
 
 	return 0;
@@ -171,10 +173,10 @@ extern int thread_create(thread_startfunc_t func, void *arg){
 }
 
 extern int thread_yield(void){
-   // interrupt_disable();
+    interrupt_disable();
     if (HAS_INIT==false)
     {
-        //interrupt_enable();
+        interrupt_enable();
     	return -1;
     }
     
@@ -184,6 +186,7 @@ extern int thread_yield(void){
 
     
     if(readyQueue.empty()){
+	interrupt_enable();
        return 0;
     }
    
@@ -201,14 +204,14 @@ extern int thread_yield(void){
 	//TODO:
     if (swapcontext(oldOne,curr)==-1)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     
     	return -1;
 	}
-   	// interrupt_enable();
+   	 //interrupt_enable();
   	 
 
- 	//interrupt_enable();
+ 	interrupt_enable();
     return 0;
 
 }
@@ -216,26 +219,27 @@ extern int thread_yield(void){
 int start(thread_startfunc_t func,void *arg){
     
 
-   // interrupt_disable();
+   
 	if (HAS_INIT==false)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     	return -1;
 	}
 
-    
+    	interrupt_enable();
 	func(arg);
+	interrupt_disable();
 
 	//DELETE THREAD AFTER IT FINISHES RUNNING:WE HAVE TO GO TO ANOTHER CONTEXT TO DO SO.
 	//Go back to old context. Seems to be only context not modified.
 	if (swapcontext(curr,old_context)==-1)
 	{
-    	//interrupt_enable();
+    	interrupt_enable();
     
     	return -1;
 	}
 
-  //interrupt_enable();
+  interrupt_enable();
     return 0;//Thread exits
 
 }
@@ -247,12 +251,21 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
 
    //IMPORTANT / TO ADD - CALL UNLOCK(lockID)!! (I think we might need a stub instead of something else?)
    //Error: The thread tries to unlock a lock it doesn't have:
+	interrupt_disable();
+
+	if (HAS_INIT==false)
+	{
+    	interrupt_enable();
+    	return -1;
+	}
   if( allLocks.find(lockID) == allLocks.end() ){ //If the lock isn't in the map:
+	interrupt_enable();
   	return 0;
   }
 
   if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TCB that currently holds the lock. 
    {
+	interrupt_enable();
          return 0; //error
    }
    std::pair<unsigned int, unsigned int> new_pair (lockID, cvID);
@@ -268,7 +281,9 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
    /* Perform switch stuff: */
    ucontext_t* old_thread; // store the current thread. *** note is it okay that old_TCB is local?***
    old_thread = curr;
+	interrupt_enable();
     thread_unlock(lockID);
+	interrupt_disable();
 	  
    if(readyQueue.empty())
    {
@@ -284,9 +299,12 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
   
 
    swapcontext(old_thread, curr); 
+	interrupt_enable();
 	thread_lock(lockID);
+	interrupt_disable();
    
-   /* We will reactivate the waiting thread : */  
+   /* We will reactivate the waiting thread : */ 
+interrupt_enable(); 
 
    return 0;
 }
@@ -296,8 +314,17 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
 int thread_signal(unsigned int lockID, unsigned int cvID){
    // Put head of cvID's sleep_queue on the tail of the ready queue BLOCKED -> READY
 	// if not in map of locks, create it:
+	interrupt_disable();
+
+	if (HAS_INIT==false)
+	{
+    	interrupt_enable();
+    	return -1;
+	}
     if (allLocks.find(lockID) == allLocks.end())
+
         {
+	      interrupt_enable();
               return 0;
 	}
 
@@ -305,6 +332,7 @@ int thread_signal(unsigned int lockID, unsigned int cvID){
 
    if( monitors.find(new_pair) == monitors.end() ) // if pair / lockID-cvID is not found
         {
+	      interrupt_enable();
               return 0;
 	}
 
@@ -314,12 +342,44 @@ int thread_signal(unsigned int lockID, unsigned int cvID){
    sleep_queue.pop_front();
 	
    readyQueue.push_back(new_ready); // push front of sleep queue to ready 
+	interrupt_enable();
    
    return 0;
 }
 
 int thread_broadcast(unsigned int lockID, unsigned int cvID){
+	interrupt_disable();
+
+	if (HAS_INIT==false)
+	{
+    	interrupt_enable();
+    	return -1;
+	}
    // Put all of the cvID's sleep_queue on the ready queue. BLOCKED -> READY
+    if (allLocks.find(lockID) == allLocks.end())
+        {
+	      interrupt_enable();
+              return 0;
+	}
+
+   std::pair<unsigned int, unsigned int> new_pair (lockID, cvID);
+
+   if( monitors.find(new_pair) == monitors.end() ) // if pair / lockID-cvID is not found
+        {
+	      interrupt_enable();
+              return 0;
+	}
+
+   std::deque<ucontext_t*>& sleep_queue = monitors[new_pair]; 
+
+   while(!sleep_queue.empty()){
+	 ucontext_t* new_ready = sleep_queue.front(); 
+         sleep_queue.pop_front();
+	
+         readyQueue.push_back(new_ready); 
+
+   }
+	interrupt_enable();
    return 0;
 }
 
@@ -330,7 +390,13 @@ int thread_broadcast(unsigned int lockID, unsigned int cvID){
 
 //static std::unordered_map<unsigned int, std::deque<thread_TCB*> > allLocks; <---note this is above
 int thread_lock(unsigned int lockID){
-    //interrupt_disable(); 
+    interrupt_disable(); 
+
+	if (HAS_INIT==false)
+	{
+    	interrupt_enable();
+    	return -1;
+	}
     
 
     // if not in map of locks, create it:
@@ -346,12 +412,14 @@ int thread_lock(unsigned int lockID){
     {
        if( lock_queue.front() == curr ) //Error: Thread tries to aquire a lock it already has
        {
+	     interrupt_enable();
 	     return -1; 
        }
     }
     if ( lock_queue.empty() ) //if(Lock == FREE): curr aquires the lock!
        {
               lock_queue.push_front(curr); // put curr at the front of lock_queue, curr aquired the lock!
+	      interrupt_enable();
 	      return 0;
        }
 	
@@ -363,6 +431,7 @@ int thread_lock(unsigned int lockID){
 	  
           if(readyQueue.empty()) //person aquired lock, can't be on ready, can't be on lock, can't be running -> must be waiting.
 	  {
+		//interrupt_enable();
 	       cout << "Thread library exiting.\n"; // We think this is a deadlock ! 
     	       exit(0); 
           }
@@ -373,17 +442,24 @@ int thread_lock(unsigned int lockID){
 	  lock_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
 
  	  swapcontext(old_thread, curr);  //RUNS FRONT OF READY QUEUE
+	 interrupt_enable();
 
 	}
 
-    //interrupt_enable();
+   
     return 0;
 }
 
 
 //Input is lockID - Somewhere need to make a stub so wait() can call unlock
 int thread_unlock(unsigned int lockID){
-    //interrupt_disable();
+    interrupt_disable();
+
+	if (HAS_INIT==false)
+	{
+    	interrupt_enable();
+    	return -1;
+	}
 
     if (allLocks.find(lockID) != allLocks.end()) //If the lock is in the map:
     {
@@ -392,12 +468,14 @@ int thread_unlock(unsigned int lockID){
         {
 	  if(allLocks[lockID].front() != curr ) 
 	   {
+		interrupt_enable();
 	        return -1;
 	   }
 	}
 
         else // if the queue is empty: (error!)
         {
+	    interrupt_enable();
 	    return -1;
 	}
 
@@ -425,11 +503,11 @@ int thread_unlock(unsigned int lockID){
 
     // else lockID not in the map, than no lock to unlock-> user error return -1.
     else
-    {
+    {	interrupt_enable();
         return 0;
     }
 
-    //interrupt_enable();
+    interrupt_enable();
     return 0;
 }
 
