@@ -22,7 +22,7 @@ int thread2();
 
 int main(){
 	// thread_create(createThreads,NULL);
-	thread_create((thread_startfunc_t)createThreads,(void*) 0);
+	thread_create((thread_startfunc_t)createThreads,NULL);
 	exit(0);
 }
 
@@ -30,8 +30,8 @@ int createThreads(){
 	thread_lock(lock1);
 	std::cout << thread_lock(lock1) << endl;
 	std::cout << "Locked lock1" << endl;
-	// thread_create((thread_startfunc_t) thread2,(void*) 0);
-	thread_create( thread2,(void*) 0);
+	// thread_create( thread2,NULL);
+	thread_create( (thread_startfunc_t) thread2,NULL);
 	thread_yield();
 	thread_unlock(lock2);
 	std::cout << "Should not unlock lock2" << endl;
