@@ -20,11 +20,10 @@ int aliveCashiers=0; // number of alive cashiers
 
 
 /* locks */
-unsigned int SANDWICHMAKER_LOCK= 100;
-unsigned int CASHIER_LOCK = 200;
+unsigned int CASHIER_LOCK= 100;
+// unsigned int CASHIER_LOCK = 200;
 unsigned int CV_BOARD_NOT_FULL = 300;
 unsigned int CV_BOARD_FULL = 400;
-
 
 
 
@@ -53,30 +52,38 @@ char** ORDER_FILES;
 // When the fewer than the no of cahsiers- then thats the max ordersw
 
 	void cashier(void* args){
+		// start_preemptions(true,true,1);
 
 		/* lock the thread first */
 		int cashierNum = (long int) args;
 		std::deque<int> sandwiches = totalSandwichList[cashierNum];
 		/* Check if the cashier is alive */
-		
+
 		while(sandwiches.size()>0 ){
 			/* lock the thread */
 			thread_lock(CASHIER_LOCK);
-
+		
 			/*  if the board is full */
 			while(currentOrders >= maxOrders || isCashierOnBoard(cashierNum)){
 				// wait for board to free space
 				// printOrdersOnBoard();
+				
 				thread_wait(CASHIER_LOCK,CV_BOARD_NOT_FULL);
 			}
 				// printf(" HERE \n");
-				// create an order
+				// create an order,
 				order myOrder;
 				myOrder.sandwich = sandwiches.front();
 				myOrder.cashier = cashierNum;
 
+				//start_preemptions(true,true,1);
+
 				// Empty the sandwiches vector
 				sandwiches.pop_front();
+
+				// update the list to use again
+				totalSandwichList[cashierNum] = sandwiches;
+
 				// add order on board
 				ordersOnBoard.push_back(myOrder);
 				
@@ -85,18 +92,28 @@ char** ORDER_FILES;
 
 				// signal new order
 				if(currentOrders == maxOrders){
-					thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
+					thread_signal(CASHIER_LOCK,CV_BOARD_FULL);
 				}
+
+				thread_wait(CASHIER_LOCK,myOrder.sandwich);
+				// cout << "READY: cashier " << cashierNum << " sandwich " << myOrder.sandwich << endl;
+				
+		
 		}
-		// reduce aliveCashiers
+		// if(!isCashierOnBoard(cashierNum) && aliveCashiers>=maxOrders){
+			// reduce aliveCashiers
 		aliveCashiers--; /* Changed because it did not get decreased properly */
+		// }
+		// printf(" alive Cashiers %d \n" , aliveCashiers);
 
 		// adjust maxOrders
 		maxOrders = std::min(aliveCashiers,maxOrders);
 
+		// printf(" HERE %d \n" , maxOrders);
 		// Wake up the maker
-		thread_signal(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
+		thread_signal(CASHIER_LOCK,CV_BOARD_FULL);
 		
+		// start_preemptions(true,true,1);
 		// unlock thread from cashiser
 		thread_unlock(CASHIER_LOCK);
 		return;
@@ -104,24 +121,26 @@ char** ORDER_FILES;
 
 
 	void sandwichMaker(void* args){
+		// start_preemptions(true,true,1);
 		int lastSandwich = -1;
 
 		// check if board has an order
 		while(aliveCashiers > 0 ){
 			
-			thread_lock(SANDWICHMAKER_LOCK);
+			thread_lock(CASHIER_LOCK);
 			// Wait for order to be posted if board is not full
 
 			while(ordersOnBoard.size() < maxOrders){
 				// signal the thread to post
 				thread_signal(CASHIER_LOCK,CV_BOARD_NOT_FULL);
-				thread_wait(SANDWICHMAKER_LOCK,CV_BOARD_FULL);
+				
+				thread_wait(CASHIER_LOCK,CV_BOARD_FULL);
 			}
 
 			// unlock if no more alive cashiers
 			if(aliveCashiers ==0){
-				thread_unlock(SANDWICHMAKER_LOCK);
-				// return;
+				thread_unlock(CASHIER_LOCK);
+				return;
 			}
 
 			// printOrdersOnBoard();
@@ -137,9 +156,6 @@ char** ORDER_FILES;
 				}
 			}
 
-			// printf("Sandwich %d\n ", ordersOnBoard[index].sandwich);
-
-
 			// update lastSandwich
 			lastSandwich = ordersOnBoard[index].sandwich;
 			int cashierNum = ordersOnBoard[index].cashier;
@@ -154,11 +170,16 @@ char** ORDER_FILES;
 			// printOrdersOnBoard();
 			// printf(" alive Cashiers %d \n ", aliveCashiers);
 
-			// thread_signal(CASHIER_LOCK,lastSandwich);
+			thread_signal(CASHIER_LOCK,lastSandwich);
 			// broadcast order can be posted
+
+			// adjust alive cashiers
+
 			thread_broadcast(CASHIER_LOCK,CV_BOARD_NOT_FULL);
 		}
-		thread_unlock(SANDWICHMAKER_LOCK);
+		
+
+		thread_unlock(CASHIER_LOCK);
 		return;
 	}
 
@@ -192,6 +213,7 @@ char** ORDER_FILES;
 
 	/* creates threads for the sandwich maker and the cashiers */
 	void createThreads(void* args){
+
 		// printf(" CREATE THREADS \n ");
 
 		/* create sandwich maker thread */
@@ -225,6 +247,8 @@ char** ORDER_FILES;
 			/* create thread for each cashier */
 			thread_create((thread_startfunc_t) cashier,(void*)(long)i);
 		}
+
+		// printf(" Total Sandwiches %d \n" ,totalSandwichList.size());
 
 	}
 
