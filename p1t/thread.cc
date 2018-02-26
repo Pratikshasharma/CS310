@@ -260,13 +260,13 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
 	}
   if( allLocks.find(lockID) == allLocks.end() ){ //If the lock isn't in the map:
 	interrupt_enable();
-  	return 0;
+  	return -1;
   }
 
   if( allLocks[lockID].front()!=curr ) // The front of lockID's queue will be the TCB that currently holds the lock. 
    {
 	interrupt_enable();
-         return 0; //error
+         return -1; //error
    }
    std::pair<unsigned int, unsigned int> new_pair (lockID, cvID);
 
