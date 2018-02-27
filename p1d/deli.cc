@@ -201,7 +201,11 @@ char** ORDER_FILES;
 		ORDER_FILES = (char **) ((void*)argv);
 
 	  	/* create threads */
-	  	thread_libinit( (thread_startfunc_t) sandwichMaker,(void*)0);
+	  	if(thread_libinit( (thread_startfunc_t) sandwichMaker,(void*)0)){
+			exit(1);
+
+}
+
 
 	}
 
