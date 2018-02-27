@@ -16,8 +16,8 @@ ucontext_t *ucontext_ptr;
     
 //DECLARE SHARED VARIABLES WITH STATIC
 /*
-
-Use this two to swap context
+TO CHANGE ::: if  swap_context();
+Check for fail of new as well! 
 */
 
 static ucontext_t *old_context;
@@ -300,7 +300,11 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
    sleep_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF PAIR"S SLEEP_QUEUE
   
 
-   swapcontext(old_thread, curr); 
+   if(swapcontext(old_thread, curr)==-1)
+    {
+    	interrupt_enable();
+	return -1;
+    } 
 
    lock_helper(lockID);
 
@@ -443,7 +447,10 @@ int thread_lock(unsigned int lockID){
 
 	  lock_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
 
- 	  swapcontext(old_thread, curr);  //RUNS FRONT OF READY QUEUE
+ 	  if(swapcontext(old_thread, curr)==-1){  //RUNS FRONT OF READY QUEUE
+	        interrupt_enable();
+	        return -1; 
+	   }
 	 interrupt_enable();
 
 	}
@@ -564,7 +571,10 @@ int lock_helper(unsigned int lockID){
 
 	  lock_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF LOCK QUEUE
 
- 	  swapcontext(old_thread, curr);  //RUNS FRONT OF READY QUEUE
+ 	  if(swapcontext(old_thread, curr)==-1){  //RUNS FRONT OF READY QUEUE
+	        interrupt_enable();
+	        return -1;
+	   }
 
 	}
    
