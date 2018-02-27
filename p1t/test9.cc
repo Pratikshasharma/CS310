@@ -5,7 +5,7 @@
 
 using namespace std;
 
-/* Based on Midterm 2016 Highway Question - this version has no explicit 'errors' but is sorta complicated so i feel like a buggy thread library may mess it up. But I'll also make an errory version for testing*/
+/* Another Test Based on Midterm 2016 Highway Question (see test7)- really similar but playing around a bit to see if there are ways to make weird errors for testing*/
 
 int afree = 1;//true
 int dir = 0;
@@ -69,12 +69,13 @@ void parent( void *a){
   int dr = 0;
   cout << "CALLS PARENT" << endl;
 
-  if (thread_create((thread_startfunc_t) Arrive, (void*) ar)) {
-	cout << "thread_create1 failed\n";
-	exit(1);
-  }
+
   if (thread_create((thread_startfunc_t) Depart, (void*) dr )) {
 	cout << "thread_create2 failed\n";
+	exit(1);
+  }
+  if (thread_create((thread_startfunc_t) Arrive, (void*) ar)) {
+	cout << "thread_create1 failed\n";
 	exit(1);
   }
    cout << "threads created!" << endl;

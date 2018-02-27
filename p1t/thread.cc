@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <ucontext.h>
 #include <deque>
-//#include <unordered_map>
 #include <iostream>
 #include <map>
 
@@ -15,18 +14,17 @@ ucontext_t *ucontext_ptr;
    
     
 //DECLARE SHARED VARIABLES WITH STATIC
-/*
-TO CHANGE ::: if  swap_context();
-Check for fail of new as well! 
-*/
 
 static ucontext_t *old_context;
 
 
 static std::deque<ucontext_t*> readyQueue;
-static ucontext_t *curr=new ucontext_t;//The thread currently running.
 
-static bool HAS_INIT=false;// Boolean to make sure we don't initialize thread library twice
+
+static ucontext_t *curr; //The thread currently running.
+
+
+static bool HAS_INIT=false; // Boolean to make sure we don't initialize thread library twice
 
 
 int start(thread_startfunc_t func, void *arg); //The stub Function as described in lecture!
@@ -50,8 +48,28 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	HAS_INIT=true;
 
 	//Initialize current thread/context to old_context.
-    
-	old_context=new ucontext_t;
+
+
+        try
+	{
+	   old_context=new ucontext_t;
+	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
+	try
+	{
+	  curr = new ucontext_t;
+	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
 
 	if (getcontext(old_context)==-1)
 	{
@@ -60,15 +78,31 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	}
     
 	//old_context->DONE=false;
-	char *stack=new char[STACK_SIZE];
+        char *stack;
+	try{
+	 stack=new char[STACK_SIZE];
+	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
 	old_context->uc_stack.ss_sp=stack;
 	old_context->uc_stack.ss_size=STACK_SIZE;
 	old_context->uc_stack.ss_flags=0;
 	old_context->uc_link=NULL;
 
 	//Declare Parent thread:
-	ucontext_t *parent=new ucontext_t;
-   
+	ucontext_t *parent;
+	try{
+	   parent=new ucontext_t;
+   	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
 
 	//Parent thread initialization
 	int err_get = getcontext(parent);
@@ -79,7 +113,17 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	}
 
 	//parent->DONE=false;
-	char *p_stack=new char[STACK_SIZE];
+ 	char* p_stack;
+	try
+	{
+	   p_stack=new char[STACK_SIZE];
+	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
 	parent->uc_stack.ss_sp=p_stack;
 	parent->uc_stack.ss_size=STACK_SIZE;
 	parent->uc_stack.ss_flags=0;
@@ -144,8 +188,17 @@ extern int thread_create(thread_startfunc_t func, void *arg){
 	}
     
 	//Declare child thread:
-	ucontext_t *child = new ucontext_t;
-    
+	ucontext_t* child;
+        try
+	{
+	child = new ucontext_t;
+        }
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
 	//child thread initialization from curr context
 	int err_get = getcontext(child);
 	if (err_get==-1)
@@ -153,9 +206,18 @@ extern int thread_create(thread_startfunc_t func, void *arg){
     	interrupt_enable();
     	return -1;
 	}
-
 	
-	char *stack=new char[STACK_SIZE];
+	char *stack;
+	try
+	{
+	   stack=new char[STACK_SIZE];
+	}
+	catch(std::bad_alloc& ba)
+	{
+	   interrupt_enable();
+  	   return -1; // Bad alloc 
+	}
+
 	child->uc_stack.ss_sp=stack;
 	child->uc_stack.ss_size=STACK_SIZE;
 	child->uc_stack.ss_flags=0;

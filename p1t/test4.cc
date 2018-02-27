@@ -14,7 +14,7 @@ using namespace std;
 // Test if a thread unlocks the lock it does not have
 // and gets the lock it has
 
-/*RETURNS ERROR - EDIT */
+/*RETURNS ERROR - EDIT HERE */
 
 unsigned int lock1=5;
 unsigned int lock2=10;

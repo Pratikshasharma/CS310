@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+/* Tests for trying to aquire a lock you already have */
 
 int g=0;
 
@@ -16,7 +16,10 @@ void loop(void *a) {
 
   id = (char *) a;
   cout <<"loop called with id " << (char *) id << endl;
-  thread_lock(1);
+  cout <<"calling thread lock" << endl;
+  if(thread_lock(1)==-1){
+	cout << "correct failing for requiring same lock" << endl;
+  }
   thread_unlock(1);
 }
 
@@ -28,8 +31,10 @@ void parent(void *a) {
 	
 	exit(1);
   }
-    thread_lock(1);
-
+  cout <<"parent should aquire lock first" << endl;
+  if(thread_lock(1)==-1){
+  	cout << "Bad. Parent should not have failed at this first aquire" << endl;
+  }
   loop( (void *) "parent thread");
 }
 
