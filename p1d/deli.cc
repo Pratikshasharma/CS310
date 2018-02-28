@@ -16,7 +16,6 @@ using namespace std;
 int maxOrders; // maxOrders on the board 
 int NUM_CASHIERS; // total initial number of cashiers 
 int recentOrder; // recently completed order by the maker
-// int currentOrders=0; // current number of orders in the board
 int aliveCashiers=0; // number of alive cashiers 
 
 int globalCashierNum=0;
@@ -36,9 +35,6 @@ struct order {
 };
 
 std::vector<order> ordersOnBoard;
-// std::vector<int> leftSandwichOrders; /* store the sandwich orders left for each cashier -- needed??*/ 
-// std::vector<std::deque<int> >totalSandwichList;
-
 
 
 void cashier(void* args);
@@ -52,10 +48,8 @@ void printOrdersOnBoard();
 char** ORDER_FILES;
 
 
-
-// When the fewer than the no of cahsiers- then thats the max ordersw
-
 	void cashier(void* args){
+		// start_preemptions(true,true,1);
 		thread_lock(LOCK);
 		int cashierNum = globalCashierNum;
 		globalCashierNum++;
@@ -83,28 +77,31 @@ char** ORDER_FILES;
 						myOrder.sandwich = order_number;
 						myOrder.cashier = cashierNum;
 
-						//start_preemptions(true,true,1);
+						// start_preemptions(true,true,1);
 						// add order on board
 						ordersOnBoard.push_back(myOrder);
-
-						// currentOrders++;
-
 						cout << "POSTED: cashier " << cashierNum << " sandwich " << myOrder.sandwich << endl;
 
-						// signal new order -- Dont check for if statement 
-						// if(currentOrders == maxOrders){
+						/* New order */
 						thread_signal(LOCK,CV_BOARD_FULL);
-						// }
-
+						/* Wait for order to be made */
 						thread_wait(LOCK,myOrder.sandwich);
 
-						// printf("Got Lock %d \n", myOrder.sandwich);
+						/* Signal back */
+						thread_signal(LOCK,CV_BOARD_FULL);
+						
+						/* Release lock so other threads in the queue can go */
+						thread_wait(LOCK,CV_BOARD_NOT_FULL);
 					}
 				}
 
 		aliveCashiers--; /* Changed because it did not get decreased properly */
-		// printf(" aliveCashiers %d \n ", aliveCashiers);
-		thread_signal(LOCK,CV_BOARD_FULL);
+		maxOrders = std::min(aliveCashiers,maxOrders);
+		
+		if(aliveCashiers > 0 ){
+			thread_signal(LOCK,CV_BOARD_FULL);
+		}
+
 		thread_unlock(LOCK);
 
 		}
@@ -125,16 +122,10 @@ char** ORDER_FILES;
 
 		// check if board has an order
 		while(aliveCashiers > 0 || ordersOnBoard.size()>0){
-			// Wait for order to be posted if board is not full
 
-
-			if(aliveCashiers < maxOrders){
-				maxOrders = aliveCashiers;
-			}
-
-			// printf(" aliveCashiers %d \n ", aliveCashiers);
-			// printf(" maxOrders %d \n ", maxOrders);
-			// printf(" ordersOnBoard %d \n ", ordersOnBoard.size());
+			// if(aliveCashiers < maxOrders){
+			// 	maxOrders = aliveCashiers;
+			// }
 
 			while(ordersOnBoard.size() < maxOrders){
 				// signal the thread to post
@@ -160,7 +151,6 @@ char** ORDER_FILES;
 			lastSandwich = ordersOnBoard[index].sandwich;
 			int cashierNum = ordersOnBoard[index].cashier;
 			
-			// currentOrders--;
 			// remove from orders vector
 			ordersOnBoard.erase(ordersOnBoard.begin() + index);
 
@@ -203,11 +193,9 @@ char** ORDER_FILES;
 	  	/* create threads */
 	  	if(thread_libinit( (thread_startfunc_t) sandwichMaker,(void*)0)){
 			exit(1);
+	}
 
 }
-
-
-	}
 
 
 	/* creates threads for the sandwich maker and the cashiers */
