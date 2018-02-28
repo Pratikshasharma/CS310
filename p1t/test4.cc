@@ -13,11 +13,14 @@ using namespace std;
 
 // Test if a thread unlocks the lock it does not have
 // and gets the lock it has
+// Test if it acquires a lock already held and releases lock already freed
+// Multiple libinit
 
-/*RETURNS ERROR - EDIT HERE */
+
 
 unsigned int lock1=5;
 unsigned int lock2=10;
+unsigned int lock3 = 15;
 
 int createThreads();
 int thread2();
@@ -46,6 +49,14 @@ int createThreads(){
 	}
 	cout<< "Should not unlock lock2" << endl;
 	thread_unlock(lock1);
+	// Free a lock already freed
+	cout<< thread_unlock(lock1) << endl;
+
+	// create another thread to check what happens when you acquire a 
+	//lock already locked
+	cout << thread_create((thread_start_func_t) thread3, (void*)0)) << endl;
+		
+	
 }
 
 int thread2(){
@@ -53,4 +64,9 @@ int thread2(){
 	cout<<" thread 2 runs with lock2 " <<endl;
 	thread_yield();
 	thread_unlock(lock2);
+}
+
+int thread3(){
+	cout << thread_lock(lock3) <<endl;
+	cout << thread_lock(lock3) <<endl;
 }
