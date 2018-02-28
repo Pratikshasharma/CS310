@@ -24,14 +24,25 @@ int globalCashierNum=0;
 /* locks */
 unsigned int LOCK= 100;
 // unsigned int LOCK = 200;
-unsigned int CV_BOARD_NOT_FULL = 300;
-unsigned int CV_BOARD_FULL = 400;
+// unsigned int CV_BOARD_NOT_FULL = 300;
+// unsigned int CV_BOARD_FULL = 400;
+unsigned int CASHIER_LOCK;
+unsigned int MAKER_LOCK;
 
+unsigned int posted = 500;
+unsigned int consumed = 600;
+
+int postedCount = 0;
+int madeCounter = 0;
 
 
 struct order {
 	int cashier;
 	int sandwich;
+};
+
+struct cashierId{
+	int cashier;
 };
 
 std::vector<order> ordersOnBoard;
@@ -51,91 +62,87 @@ char** ORDER_FILES;
 	void cashier(void* args){
 		// start_preemptions(true,true,1);
 		thread_lock(LOCK);
-		int cashierNum = globalCashierNum;
-		globalCashierNum++;
+
+
+		int cashierNum = (long) args;
+		// globalCashierNum++;
+
+		// printf(" cashierNum %d \n  ", cashierNum);
+
 		// start_preemptions(true,true,1);
-		char* orderFile = (char*) ((void*)args);
+		char* orderFile = (char*) (ORDER_FILES[((long)args+2)]);
 		char str[255];
 		string line;
 		int order_number;
 
 		ifstream fileStream (orderFile);
+
 		if (fileStream.is_open()){
 			while(getline(fileStream,line)){
 				if(!line.empty()){
 					stringstream file_input(line);
 					file_input >> order_number;
-						// Did not have isCashierOnBoard here 
-						while(ordersOnBoard.size() >= maxOrders )
-						{
-						// wait for board to free space
-						// printOrdersOnBoard();
-							thread_wait(LOCK,CV_BOARD_NOT_FULL);
+
+						while(ordersOnBoard.size() >= maxOrders){
+							thread_wait(LOCK, consumed);
+							// printf(" Board Size %d \n ", ordersOnBoard.size());
+							// printf(" cashierNum %d \n  ", cashierNum);
 						}
 						// create an order,
 						order myOrder;
 						myOrder.sandwich = order_number;
 						myOrder.cashier = cashierNum;
 
-						// start_preemptions(true,true,1);
 						// add order on board
 						ordersOnBoard.push_back(myOrder);
-						cout << "POSTED: cashier " << cashierNum << " sandwich " << myOrder.sandwich << endl;
+						cout << "POSTED: cashier " << cashierNum << " sandwich " << order_number << endl;
 
 						/* New order */
-						thread_signal(LOCK,CV_BOARD_FULL);
-						/* Wait for order to be made */
-						thread_wait(LOCK,myOrder.sandwich);
+						thread_signal(LOCK,posted);
 
-						/* Signal back */
-						thread_signal(LOCK,CV_BOARD_FULL);
-						
-						/* Release lock so other threads in the queue can go */
-						thread_wait(LOCK,CV_BOARD_NOT_FULL);
+						/* DEBUG */
+						postedCount++;
+						// printf(" thread %d  waiting on %d \n ", cashierNum, cashierNum);
+						thread_wait(LOCK,cashierNum);
+
+						// thread_signal(LOCK,posted);
+
+						// thread_wait(LOCK,consumed);
+
+
 					}
 				}
-
+			}
+		// thread_lock(1);
 		aliveCashiers--; /* Changed because it did not get decreased properly */
+		// thread_unlock(1);
+		
 		maxOrders = std::min(aliveCashiers,maxOrders);
 		
 		if(aliveCashiers > 0 ){
-			thread_signal(LOCK,CV_BOARD_FULL);
+			thread_signal(LOCK,posted);
 		}
-
 		thread_unlock(LOCK);
-
-		}
 	}
 
 	void sandwichMaker(void* args){
+		thread_lock(LOCK);
 		// start_preemptions(true,true,1);
 
-		thread_lock(LOCK);
-		int lastSandwich = -1;
-
 		for(int i=0; i < NUM_CASHIERS;i++){
-			/* create thread for each cashier */
-			if(thread_create((thread_startfunc_t) cashier,(void*)ORDER_FILES[i+2])){
-				exit(1);
-			}
+			// thread_create((thread_startfunc_t) cashier,(void*)ORDER_FILES[i+2]);
+			thread_create((thread_startfunc_t) cashier,(void*)i);
 		}
 
-		// check if board has an order
-		while(aliveCashiers > 0 || ordersOnBoard.size()>0){
+		int lastSandwich = -1;
 
-			// if(aliveCashiers < maxOrders){
-			// 	maxOrders = aliveCashiers;
-			// }
+		// check if board has an order
+		while(aliveCashiers > 0 ){
 
 			while(ordersOnBoard.size() < maxOrders){
-				// signal the thread to post
-				thread_signal(LOCK,CV_BOARD_NOT_FULL);
-				
-				thread_wait(LOCK,CV_BOARD_FULL);
+
+				thread_wait(LOCK,posted);
 			}
-
-			// printf(" DONT WAIT \n");
-
 			// get the index of next sandwich 
 			int minimumDiff = 1000; /* 999 +1 */
 			int index;
@@ -156,13 +163,16 @@ char** ORDER_FILES;
 
 			// Order completed
 			
+			/* DEBUG */
+			madeCounter++;
+
 			cout << "READY: cashier " << cashierNum << " sandwich " << lastSandwich << endl; 
 
-			thread_signal(LOCK,lastSandwich);
+			thread_signal(LOCK,consumed);
+			
+			thread_signal(LOCK,cashierNum);
 
-			// USED WAIT HERE 
-			// thread_broadcast(LOCK,CV_BOARD_NOT_FULL);
-			thread_wait(LOCK,CV_BOARD_FULL);
+			
 		}
 		
 		thread_unlock(LOCK);
@@ -195,22 +205,11 @@ char** ORDER_FILES;
 			exit(1);
 	}
 
+
+
 }
 
 
-	/* creates threads for the sandwich maker and the cashiers */
-	// void createThreads(void* args){
-
-		/* create sandwich maker thread */
-		// thread_create((thread_startfunc_t) sandwichMaker, (void*) 0 );
-
-
-		// char str[255];
-
-		
-
-		// NEED a return here ??
-	// }
 
 
 /* Debugging - print the orders on board */
