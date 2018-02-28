@@ -52,7 +52,7 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 
         try
 	{
-	   old_context=new ucontext_t;
+	   old_context = (ucontext_t*) malloc(sizeof(ucontext_t));  //EDITED
 	}
 	catch(std::bad_alloc& ba)
 	{
@@ -62,7 +62,7 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 
 	try
 	{
-	  curr = new ucontext_t;
+	  curr = (ucontext_t*) malloc(sizeof(ucontext_t));  //EDITED
 	}
 	catch(std::bad_alloc& ba)
 	{
@@ -143,15 +143,15 @@ extern int thread_libinit(thread_startfunc_t func, void *arg){
 	//DELETE THREADS IF OLD_CONTEXT IS EVER REACTIVATED
     
 	// TODO: CLEAN UP AND FREE SPACE.
-interrupt_enable();
+       interrupt_enable();
     
    while(!(readyQueue.empty())){
     
-	delete curr->uc_stack.ss_sp;
+	free( curr->uc_stack.ss_sp ); //CHANGED
 	curr->uc_stack.ss_sp=NULL;
 	curr->uc_stack.ss_size=0;
 	curr->uc_stack.ss_flags=0;
-	delete curr;
+	free( curr );  //CHANGED
     
 	curr=readyQueue.front();
 	readyQueue.pop_front();
@@ -317,11 +317,12 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
    //Error: The thread tries to unlock a lock it doesn't have:
 	interrupt_disable();
 
-	if (HAS_INIT==false)
+  if (HAS_INIT==false)
 	{
     	interrupt_enable();
     	return -1;
 	}
+
   if( allLocks.find(lockID) == allLocks.end() ){ //If the lock isn't in the map:
 	interrupt_enable();
   	return -1;
@@ -362,7 +363,7 @@ int thread_wait(unsigned int lockID, unsigned int cvID){
    sleep_queue.push_back(old_thread);//PUSHES RUNNING THREAD TO BACK OF PAIR"S SLEEP_QUEUE
   
 
-   if(swapcontext(old_thread, curr)==-1)
+   if(swapcontext(old_thread, curr)==-1) /*This is where the segfault is with deli -- curr is null for some reason */
     {
     	interrupt_enable();
 	return -1;
@@ -517,7 +518,6 @@ int thread_lock(unsigned int lockID){
 
 	}
 
-   
     return 0;
 }
 
@@ -667,12 +667,6 @@ int unlock_helper(unsigned int lockID){
         {
 	    return -1;
 	}
-
-        /*
-        if( allLocks[lockID].front() != curr or allLocks[lockID].empty() )
-        {
-          return -1; //error
-        }*/
 
         std::deque<ucontext_t*>& lock_queue = allLocks[lockID]; // Get lockID from the map. 
 	
