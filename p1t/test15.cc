@@ -89,7 +89,7 @@ int aliveCashiers=0; // number of alive cashiers
 unsigned int LOCK= 100;
 unsigned int posted = 500;
 unsigned int consumed = 600;
-bool preemptions = true;
+bool preemptions = false;
 
 int postedCount = 0;
 int madeCounter = 0;
