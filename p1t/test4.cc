@@ -24,11 +24,12 @@ unsigned int lock3 = 15;
 
 int createThreads();
 int thread2();
+int thread3();
 
 
 int main() {
   if (thread_libinit( (thread_startfunc_t) createThreads, (void *) 100)) {
-    cout << "thread_libinit failed\n";
+    cout << "thread_libinit failed" << endl;
     exit(1);
   }
 }
@@ -43,18 +44,26 @@ int createThreads(){
   	  exit(1);
   	}
 
-	thread_yield();
-	if(thread_unlock(lock2)==-1){
-	cout << "Did not unlock lock2" << endl;	
+	if(thread_yield()){
+		cout << "thread yield failed" << endl;
 	}
-	cout<< "Should not unlock lock2" << endl;
-	thread_unlock(lock1);
+
+	if(thread_unlock(lock2)==-1){
+		cout << "correct: unlock lock2 should fail " << endl;	
+	}
+	
+	if(thread_unlock(lock1)!=0){
+		cout << "failed: unlock lock1 " << endl;
+	} 
+	
 	// Free a lock already freed
-	cout<< thread_unlock(lock1) << endl;
+	if(thread_unlock(lock1)!=-1){
+		cout << "failed: freeing an already freed lock " << endl;
+	} 
 
 	// create another thread to check what happens when you acquire a 
 	//lock already locked
-	cout << thread_create((thread_start_func_t) thread3, (void*)0)) << endl;
+	cout << thread_create((thread_startfunc_t) thread3, (void*)0) << endl;
 		
 	
 }
@@ -68,5 +77,8 @@ int thread2(){
 
 int thread3(){
 	cout << thread_lock(lock3) <<endl;
-	cout << thread_lock(lock3) <<endl;
+	if(thread_lock(lock3) !=-1){
+		cout << "failed: locking an already locked lock " <<endl;
+	}
+	
 }
