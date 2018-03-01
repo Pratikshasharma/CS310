@@ -28,14 +28,18 @@ void parent(void *a) {
   arg = (long int) a;
 
   cout << "parent called with arg " << arg << endl;
-for(int i=0;i<10000000000000000;i++){
+for(int i=0;i<10;i++){
   if (thread_create((thread_startfunc_t) loop, (void *) "child thread")) {
     cout << "thread_create failed\n";
     exit(1);
   }
 }
-
-  loop( (void *) "parent thread");
+  //for( int=0  //So only 10 threads active at a time- but toooons of threads are created over the course of the program.
+  for(int i=0;i<100000000;i++)
+   {	
+	loop( (void *) "parent thread");
+   }
+  cout << "done?" << endl;
 }
 
 int main() {
@@ -44,3 +48,4 @@ int main() {
     exit(1);
   }
 }
+
