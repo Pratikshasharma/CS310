@@ -604,7 +604,7 @@ int thread_unlock(unsigned int lockID){
  // Store thread_TCB from the top of lock queue 
         //lock_queue.pop_front(); //nvm DON'T pop this TCB, keep at top of lock queue as t aquired the lock! 
         // Leave lock as aquired by this thread! (Hand off locks from lecture)
-	lock_queue.pop_front();
+	//lock_queue.pop_front();
 
         readyQueue.push_back(t); // Put t from lockqueue on back of ready queue  BLOCKED -> READY QUEUE
 
