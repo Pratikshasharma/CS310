@@ -2,7 +2,7 @@
 //We used the recommended shellcode. We obviously changed the return address.
 //We made 500 no-ops based on our calculations
 //We ran a java file to print out those hex values of the bytecode instructions and then copy pasted into 
-a terminal. Details are in shellcode.c . The actually shellcode is at the very bottom of that file.
+a terminal. Details are in shellcode.c . The actual shellcode is at the very bottom of that file.
 
 Sequence of commands to run:
 
