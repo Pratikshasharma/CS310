@@ -16,7 +16,7 @@ and to also send in the string that replaces the content of index.html in the re
         
 
 3)Doing this took us to a terminal on the remote server.
-    We cd'd into the www folder where the index file and used vim to replaced the file with "we hacked this".
+    We cd'd into the www folder where the index.html file was and used vim to replaced the contents of the file with "we hacked this".
     
     
     
