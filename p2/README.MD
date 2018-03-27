@@ -11,6 +11,10 @@ Sequence of commands to run:
 2) connect to port 5050 after opening it (open another tab in termial)
 and to also send in the string that replaces the content of index.html in the remote server::
         nc 310test.cs.duke.edu 5050
+
+        
+        
+
 3)Doing this took us to a terminal on the remote server.
     We cd'd into the www folder where the index file and used vim to replaced the file with "we hacked this".
     
