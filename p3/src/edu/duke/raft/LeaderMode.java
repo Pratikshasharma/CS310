@@ -1,4 +1,6 @@
 package edu.duke.raft;
+//import Timer from java.util.Timer;
+
 
 public class LeaderMode extends RaftMode {
   public void go () {
@@ -11,6 +13,10 @@ public class LeaderMode extends RaftMode {
 			  ": switched to leader mode.");
     }
   }
+  
+  // Leader sends out heartbeat
+  // if another election going on currentTerm or outdated  then the leaders rejects it
+  // Candidate calling election has higher currentTerm then just vote for it 
   
   // @param candidate’s term
   // @param candidate requesting vote
@@ -26,6 +32,8 @@ public class LeaderMode extends RaftMode {
       int term = mConfig.getCurrentTerm ();
       int vote = term;
       return vote;
+
+      // check the 
     }
   }
   

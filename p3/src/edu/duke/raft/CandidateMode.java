@@ -1,7 +1,18 @@
 package edu.duke.raft;
+import java.util.Timer;
 
 public class CandidateMode extends RaftMode {
+	Timer checkVoteTimer;
+	Timer electionTimeout;
+	
+	int timerID;
+
+	
   public void go () {
+	  // clear ref responses
+	  // reset the election timer
+	  // schedule the timer
+	  
     synchronized (mLock) {
       int term = 0;      
       System.out.println ("S" + 
@@ -10,7 +21,28 @@ public class CandidateMode extends RaftMode {
 			  term + 
 			  ": switched to candidate mode.");
     }
+    
+    // increase current term
+    int currentTerm = mConfig.getCurrentTerm ();
+    currentTerm+=1;
+    
+    // if election times out then call for votes
+    for(int i =1; i <= mConfig.getNumServers(); i++) {
+    		remoteRequestVote(i, currentTerm, mID, mLog.getLastIndex(), mLog.getLastTerm());
+    }
+    
+   
+    
+    
+//    mode.remoteRequestVote(mID, currentTerm, candidateID, lastLogIndex, lastLogTerm);
+    
+    
   }
+  
+  
+  // have a checkVote time out function , array 
+  // count then - cancel both timers before you set mode to leader
+  
 
   // @param candidate’s term
   // @param candidate requesting vote

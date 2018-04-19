@@ -1,8 +1,18 @@
 package edu.duke.raft;
+import java.util.Timer;
 
 public class FollowerMode extends RaftMode {
+int timerId = 0;
+Timer timer;
+RaftMode mode;
+	
   public void go () {
-    synchronized (mLock) {
+	long electionTimeOut = ((long) Math.random()* (RaftMode.ELECTION_TIMEOUT_MIN - RaftMode.ELECTION_TIMEOUT_MAX)) + 
+				RaftMode.ELECTION_TIMEOUT_MIN;
+	
+	timer = mode.scheduleTimer(electionTimeOut,timerId);
+
+	synchronized (mLock) {
       int term = 0;
       System.out.println ("S" + 
 			  mID + 
@@ -53,7 +63,14 @@ public class FollowerMode extends RaftMode {
 
   // @param id of the timer that timed out
   public void handleTimeout (int timerID) {
+    // every single class has go- which is called for each mode 
     synchronized (mLock) {
+    	// cancel timer and become candidate
+    		timer.cancel();
+    		// increment the term when you convert from follower to candidate- can be done in the candidate 
+    		CandidateMode candidateMode = new CandidateMode();
+    		RaftServerImpl.setMode(candidateMode);
+
     }
   }
 }
