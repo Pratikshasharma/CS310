@@ -1,0 +1,11 @@
+TIME_TO_SIMULATE=10
+TIME_TO_SIMULATE=10
+TIME_TO_SIMULATE=10
+S3.1: Log { (1 1) }
+S1.1: Log { (1 1) }
+S2.1: Log { (1 1) }
+S3.0: switched to follower mode.
+S2.0: switched to follower mode.
+S1.0: switched to follower mode.
+S2.1: Log { (1 1) }
+S2.0: switched to follower mode.
