@@ -58,8 +58,11 @@ public class CandidateMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			int result = term;
-			return result;
+			int vote =term;
+			if(mID == candidateID) {
+				vote = 0;
+			}
+			return vote;
 		}
 	}
 
@@ -74,7 +77,13 @@ public class CandidateMode extends RaftMode {
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) {
 		synchronized (mLock) {
+			
 			int term = mConfig.getCurrentTerm();
+			if (leaderTerm >= term) {
+				this.electionTimeoutTimer.cancel();
+				this.checkVoteTimer.cancel();
+				RaftServerImpl.setMode(new FollowerMode());
+			}
 			int result = term;
 			return result;
 		}

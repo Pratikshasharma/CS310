@@ -10,7 +10,6 @@ public class FollowerMode extends RaftMode {
 	public void go() {
 
 		synchronized (mLock) {
-			
 			// schedule timer
 			Random random = new Random();
 			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MIN - ELECTION_TIMEOUT_MAX) + 
@@ -58,12 +57,13 @@ public class FollowerMode extends RaftMode {
 		// every single class has go- which is called for each mode
 		synchronized (mLock) {
 			// cancel timer and become candidate
-			timer.cancel();
-			// increment the term when you convert from follower to candidate- can be done
-			// in the candidate
-			CandidateMode candidateMode = new CandidateMode();
-			RaftServerImpl.setMode(candidateMode);
-
+			if(timerID == this.TIMER_ID) {
+				timer.cancel();
+				// increment the term when you convert from follower to candidate- can be done
+				// in the candidate
+				CandidateMode candidateMode = new CandidateMode();
+				RaftServerImpl.setMode(candidateMode);
+			}
 		}
 	}
 }

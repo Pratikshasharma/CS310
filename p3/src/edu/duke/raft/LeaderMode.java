@@ -14,9 +14,9 @@ public class LeaderMode extends RaftMode {
 			System.out.println("S" + mID + "." + term + ": switched to leader mode.");
 			
 			// schedule heartBeatTimer
-						heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
-						// send heartbeats
-						this.sendHeartbeats();
+			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+			// send heartbeats
+			this.sendHeartbeats();
 			
 			// clear responses
 			RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
@@ -44,7 +44,7 @@ public class LeaderMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			int vote=0;
+			int vote = 0;
 			// reject vote
 			if(candidateTerm <= term) vote= term;
 			
@@ -94,8 +94,7 @@ public class LeaderMode extends RaftMode {
 				this.heartbeatTimer.cancel();
 				// reschedule heartBeatTimer
 				heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
-				
-				
+			
 			}
 		}
 	}
