@@ -52,7 +52,7 @@ public class LeaderMode extends RaftMode {
 			// if candidate term is higher than current term 
 			if(candidateTerm > term ) {
 				// candidate with more recent log - cancel timer, change to follower mode and vote 
-				if(lastLogTerm >= mLog.getLastTerm()) {
+				if( lastLogTerm >= mLog.getLastTerm() ) {
 					this.heartbeatTimer.cancel();
 					mConfig.setCurrentTerm(candidateTerm, 0);
 					RaftServerImpl.setMode(new FollowerMode());
@@ -85,7 +85,7 @@ public class LeaderMode extends RaftMode {
 			int result = term;
 			//Doing it just to be safe. Don't think a leader would replicate on itself.
 			if(leaderTerm>term){
-			    this.heartbeartTimer.cancel();
+			    this.heartbeatTimer.cancel();
 			    RaftServerImpl.setMode(new FollowerMode());
 			    return 0;
 			}

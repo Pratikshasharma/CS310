@@ -12,7 +12,7 @@ public class FollowerMode extends RaftMode {
 		synchronized (mLock) {
 			// schedule timer
 			Random random = new Random();
-			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MIN - ELECTION_TIMEOUT_MAX) + 
+			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
 					ELECTION_TIMEOUT_MIN;
 			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
