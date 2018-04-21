@@ -89,7 +89,7 @@ public class RaftConfig {
 		      '\n').getBytes ()
 		   );
 	out.close ();
-	// voting record safely on disk now
+	// voting record safely on disk now.
 	mCurrentTerm = term;
 	mVotedFor = votedFor;
       } catch (IOException e) {

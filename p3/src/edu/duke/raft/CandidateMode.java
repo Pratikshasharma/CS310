@@ -17,7 +17,7 @@ public class CandidateMode extends RaftMode {
 			// increase current term
 			int currentTerm = mConfig.getCurrentTerm();
 			currentTerm += 1;
-			mConfig.setCurrentTerm(currentTerm, mID); // ? votedFor as mID
+			mConfig.setCurrentTerm(currentTerm, 0); // ? votedFor as mID
 
 			// set term
 			RaftResponses.setTerm(mConfig.getCurrentTerm());

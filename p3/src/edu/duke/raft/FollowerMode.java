@@ -30,8 +30,20 @@ public class FollowerMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			int vote = term;
-			return vote;
+			if (candidateTerm>=term &&lastLogIndex>=mLog.getLastIndex()
+					&&mConfig.getVotedFor()==0) {
+		// We will vote for candidate if all those conditions above are met.
+				
+				mConfig.setCurrentTerm(candidateTerm, candidateID);
+				return 0;
+				
+			}else{
+				mConfig.setCurrentTerm(candidateTerm, 0); //Upgrade term if we have to and don't vote
+				return term;
+				
+			}
+			
+			
 		}
 	}
 
@@ -47,6 +59,10 @@ public class FollowerMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
+			if(leaderTerm>=term){
+				mConfig.setCurrentTerm(leaderTerm, 0);
+				return 0;
+			}
 			int result = term;
 			return result;
 		}
@@ -57,7 +73,7 @@ public class FollowerMode extends RaftMode {
 		// every single class has go- which is called for each mode
 		synchronized (mLock) {
 			// cancel timer and become candidate
-			if(timerID == this.TIMER_ID) {
+			if(timerID == this.TIMER_ID) {// check timer id?
 				timer.cancel();
 				// increment the term when you convert from follower to candidate- can be done
 				// in the candidate
