@@ -22,7 +22,7 @@ public class CandidateMode extends RaftMode {
 			// set term
 			RaftResponses.setTerm(mConfig.getCurrentTerm());
 			// clear votes for the current term
-			RaftResponses.clearVotes(currentTerm);
+			RaftResponses.clearVotes(currentTerm); //EDIT ---- Chase says Maybe remove this? 
 			
 			// schedule electiontimer
 			Random random = new Random();
