@@ -17,6 +17,7 @@ public class LeaderMode extends RaftMode {
 			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
 			// send heartbeats
 			this.sendHeartbeats();
+		
 					
 			//Set the term.
 			RaftResponses.setTerm(term);

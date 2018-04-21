@@ -30,8 +30,9 @@ public class FollowerMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			if (candidateTerm>=term &&lastLogIndex>=mLog.getLastIndex()
-					&&mConfig.getVotedFor()==0) {
+			if (candidateTerm>=term 
+					&&lastLogIndex>=mLog.getLastIndex()
+					&&(mConfig.getVotedFor()==0||mConfig.getVotedFor()==candidateID)) {
 		// We will vote for candidate if all those conditions above are met.
 				
 				mConfig.setCurrentTerm(candidateTerm, candidateID);
@@ -79,6 +80,7 @@ public class FollowerMode extends RaftMode {
 				// in the candidate
 				CandidateMode candidateMode = new CandidateMode();
 				RaftServerImpl.setMode(candidateMode);
+				
 			}
 		}
 	}

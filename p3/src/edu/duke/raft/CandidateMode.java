@@ -83,6 +83,7 @@ public class CandidateMode extends RaftMode {
 				this.electionTimeoutTimer.cancel();
 				this.checkVoteTimer.cancel();
 				RaftServerImpl.setMode(new FollowerMode());
+			
 			}
 			int result = term;
 			return result;
@@ -105,6 +106,7 @@ public class CandidateMode extends RaftMode {
 					this.electionTimeoutTimer.cancel();
 					this.checkVoteTimer.cancel();
 					RaftServerImpl.setMode(new LeaderMode());
+					
 					
 				} else { // lost election -- restart check vote timer
 					this.checkVoteTimer.cancel();
