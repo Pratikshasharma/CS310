@@ -34,29 +34,46 @@ const char *content_text = "Content-type: text/plain\n\n";
 const char *www_path = "./www/";
 
 int main(int argc, char *argv[]) {
-  int port;
-
+  int port;//??
+    
+//??
   if (argc < 2 || (port = atoi(argv[1])) < 1 || port > 65535) {
     printf("Usage: webserver port\n");
     exit(1);
   }
-
+    
+    /**
+    port_arg points to structure with 6 bytes. initially set to
+    '\0' then value of whatever is in agv[1] is copied into it
+    **/
+    
   port_arg = (char *)malloc(6*sizeof (char));
   memset(port_arg, '\0', 6);
   strncpy(port_arg, argv[1], 5);
-
+    
+/*
+Define signals to certain events?
+ctrl-c and a segfault. Define sigint 
+and sigsegv as handlers.
+*/
   signal(SIGINT, &sigint);
   signal(SIGSEGV, &sigsegv);
+    
 	
   struct sockaddr_in socket_addr;
-  sock = socket(PF_INET, SOCK_STREAM, 0);
+    
+  sock = socket(PF_INET, SOCK_STREAM, 0);//Creates a socket.
   int on = 1;
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof on);
+    
+    
 	
   memset(&socket_addr, 0, sizeof socket_addr);
   socket_addr.sin_family = PF_INET;
   socket_addr.sin_port = htons(port);
   socket_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    
+    
 
   if (bind(sock, (struct sockaddr *)&socket_addr, sizeof socket_addr) < 0) {
     perror("couldn't bind");
@@ -66,29 +83,42 @@ int main(int argc, char *argv[]) {
 	
   while (1) {
     int acceptsock = accept(sock, NULL, NULL);
+      
     char *input = (char *)malloc(1024*sizeof (char));
     recv(acceptsock, input, 1024, 0);
     int is_html = 0;
     char *contents = handle(input,&is_html);
     free(input);
 
+      
     if (contents != NULL) {
       send(acceptsock, resp_ok, strlen(resp_ok), 0);
-      if (is_html) {
-	send(acceptsock, content_html, strlen(content_html), 0);
-      } else {
-	send(acceptsock, content_text, strlen(content_text), 0);
+        
+    if(is_html) {
+	  send(acceptsock, content_html, strlen(content_html), 0);
+      } 
+        
+    else {
+	   send(acceptsock, content_text, strlen(content_text), 0);
       }
+        
       send(acceptsock, contents, strlen(contents), 0);
       send(acceptsock, "\n", 1, 0);
       free(contents);
-    } else {
+        
+    } 
+      
+      else {
+          
       send(acceptsock, resp_bad, strlen(resp_bad), 0);
     }    
     close(acceptsock);
+      
   }
 
+    
   return 0;
+    
 }
 
 char *handle(char *request, int *is_html) {
@@ -97,19 +127,22 @@ char *handle(char *request, int *is_html) {
   //printf("filename+140: %u\n", (filename+140));
   memset(filename, '\0', 100*sizeof (char));
   if (strstr(request, prefix) == request) {
-    char *start = request + strlen(prefix);
+    char *start = request + strlen(prefix);   //here?
     char *end = strstr(start, " HTTP");
     if (end == NULL) {
       printf("Unsupported command.\n");
       return NULL;
     }
     int len = (int) (end - start);
-    if (check_filename_length(len)) {
+    if (check_filename_length(len)) {//problem is here!
       strncpy(filename, start, len);
+        
     } else {
       return NULL;
     }  
-  } else {
+  }//end of if
+    
+    else {
     printf("Unsupported command.\n");
     return NULL;
   }
@@ -146,6 +179,7 @@ char *handle(char *request, int *is_html) {
 
   return contents;
 }
+
 
 int check_filename_length(byte len) {
   if (len < 100) {
