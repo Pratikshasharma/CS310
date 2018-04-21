@@ -82,6 +82,13 @@ public class LeaderMode extends RaftMode {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
 			int result = term;
+			//Doing it just to be safe. Don't think a leader would replicate on itself.
+			if(leaderTerm>term){
+			    this.heartbeartTimer.cancel();
+			    RaftServerImpl.setMode(new FollowerMode());
+			    return 0;
+			}
+			
 			return result;
 		}
 	}
@@ -94,6 +101,10 @@ public class LeaderMode extends RaftMode {
 				this.heartbeatTimer.cancel();
 				// reschedule heartBeatTimer
 				heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+				
+				// send heartbeats
+			    this.sendHeartbeats();
+				
 			
 			}
 		}
