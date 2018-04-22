@@ -57,13 +57,13 @@ public class CandidateMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-<<<<<<< HEAD
+
 			int vote =term;
 			if(mID == candidateID) {
 				vote = 0;
 			}
 			return vote;
-=======
+
 			// vote for someone who is requesting a vote with a higher term
 			if(candidateTerm > term) {
 				this.electionTimeoutTimer.cancel();
@@ -75,7 +75,7 @@ public class CandidateMode extends RaftMode {
 			}else {
 				return term;
 			}
->>>>>>> f6b1d92e4f219d4edeb47b6eb1a858b5cccbcd9a
+
 		}
 	}
 
