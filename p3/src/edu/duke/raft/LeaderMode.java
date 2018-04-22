@@ -91,6 +91,9 @@ public class LeaderMode extends RaftMode {
 			    RaftServerImpl.setMode(new FollowerMode());
 			    return 0;
 			}
+			if (leaderTerm==term) {
+				return 0;
+			}
 			
 			return result;
 		}
