@@ -35,7 +35,7 @@ public class FollowerMode extends RaftMode {
 					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID))) {
 		// We will vote for candidate if all those conditions above are met.
 				
-				mConfig.setCurrentTerm(candidateTerm, candidateID);
+				mConfig.setCurrentTerm(candidateTerm, 0);
 				return 0;
 				
 			}else{

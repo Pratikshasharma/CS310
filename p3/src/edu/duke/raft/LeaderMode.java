@@ -44,8 +44,14 @@ public class LeaderMode extends RaftMode {
 			entries.add(mLog.getEntry(lastMatchedIndexPointer+1));
 			Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
 			
+			int prevLogTerm = 0;
+
+			if(mLog.getEntry(lastMatchedIndexPointer)!=null){
+				prevLogTerm = mLog.getEntry(lastMatchedIndexPointer).term;
+			}
+
 			remoteAppendEntries (i, mConfig.getCurrentTerm(),mID,
-					lastMatchedIndexPointer,mLog.getEntry(lastMatchedIndexPointer).term,entriesArray,mCommitIndex);
+					lastMatchedIndexPointer,prevLogTerm,entriesArray,mCommitIndex);
 				
 			// get all the responses
 			int [] responses = RaftResponses.getAppendResponses(mConfig.getCurrentTerm());
@@ -120,6 +126,9 @@ public class LeaderMode extends RaftMode {
 			    this.heartbeatTimer.cancel();
 			    RaftServerImpl.setMode(new FollowerMode());
 			    return 0;
+			}
+			if (leaderTerm==term) {
+				return 0;
 			}
 			
 			return result;

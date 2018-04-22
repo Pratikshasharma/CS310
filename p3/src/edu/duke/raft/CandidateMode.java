@@ -59,6 +59,7 @@ public class CandidateMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			// vote for someone who is requesting a vote with a higher term
 			if(candidateTerm > term) {
+				this.electionTimeoutTimer.cancel();
 				mConfig.setCurrentTerm(candidateTerm, 0);
 				RaftServerImpl.setMode(new FollowerMode());
 				return 0;
