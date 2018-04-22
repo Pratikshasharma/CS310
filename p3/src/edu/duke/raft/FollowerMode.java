@@ -32,7 +32,7 @@ public class FollowerMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			if (candidateTerm>=term 
 					&&lastLogIndex>=mLog.getLastIndex()
-					&&(mConfig.getVotedFor()==0)) {
+					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID))) {
 		// We will vote for candidate if all those conditions above are met.
 				
 				mConfig.setCurrentTerm(candidateTerm, candidateID);
@@ -43,7 +43,6 @@ public class FollowerMode extends RaftMode {
 				return term;
 				
 			}
-			
 			
 		}
 	}
@@ -63,20 +62,21 @@ public class FollowerMode extends RaftMode {
 			int result = term;
 			
 			// return false if term < current Term
-//			if(leaderTerm < term) return term;
+			if(leaderTerm < term) return term;
 			
 //			resetTimer
 			this.timer.cancel();
-			
 			Random random = new Random();
 			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
 					ELECTION_TIMEOUT_MIN;
 			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
+
 			if(leaderTerm>=term){
 				mConfig.setCurrentTerm(leaderTerm, 0);
 			}
 			
+
 			// RPC 2,3,4
 			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
@@ -91,13 +91,10 @@ public class FollowerMode extends RaftMode {
 			// reset commitIndex if leaderCommit > commitindex
 			// RPC- 5
 			if(leaderCommit > mCommitIndex) {
-				mCommitIndex = mLog.getLastIndex();
-			}else {
-				mCommitIndex = leaderCommit;
+				mCommitIndex = Math.min(leaderCommit,mLog.getLastIndex());
 			}
 			
-			return result;
-			
+			return result;	
 		}
 	}
 

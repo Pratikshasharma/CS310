@@ -84,14 +84,15 @@ public class CandidateMode extends RaftMode {
 		synchronized (mLock) {
 			
 			int term = mConfig.getCurrentTerm();
+			
+			// check for leaderMode
 			if (leaderTerm >= term) {
 				this.electionTimeoutTimer.cancel();
-//				this.checkVoteTimer.cancel();
+				mConfig.setCurrentTerm(leaderTerm, 0);
 				RaftServerImpl.setMode(new FollowerMode());
-			
+				return 0;
 			}
-			int result = term;
-			return result;
+			return term;
 		}
 	}
 
