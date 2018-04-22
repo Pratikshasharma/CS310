@@ -40,7 +40,6 @@ public class CandidateMode extends RaftMode {
 			for (int i = 1; i <= mConfig.getNumServers(); i++) {
 				this.remoteRequestVote(i, mConfig.getCurrentTerm(), mID, mLastApplied, mLog.getLastTerm());
 			}
-
 			System.out.println("S" + mID + "." + currentTerm + ": switched to candidate mode.");
 		}
 

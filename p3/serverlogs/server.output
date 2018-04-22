@@ -10,3 +10,56 @@ S2.870: switched to follower mode.
 S2.871: switched to candidate mode.
  Server 2 got 2 votes 
 S2.871: switched to leader mode.
+TIME_TO_SIMULATE=50
+S3.870: Log { (1 1) }S1.871: Log { (1 1) }
+
+S2.871: Log { (1 1) }
+S1.871: switched to follower mode.
+S2.871: switched to follower mode.
+S3.870: switched to follower mode.
+S3.871: switched to candidate mode.
+S1.872: switched to candidate mode.
+S3.872: switched to follower mode.
+ Server 1 got 2 votes 
+S1.872: switched to leader mode.
+S3.873: switched to candidate mode.
+S3.874: switched to candidate mode.
+S3.875: switched to candidate mode.
+S3.876: switched to candidate mode.
+S3.877: switched to candidate mode.
+S3.878: switched to candidate mode.
+S3.879: switched to candidate mode.
+S3.880: switched to candidate mode.
+S3.881: switched to candidate mode.
+S3.882: switched to candidate mode.
+S3.883: switched to candidate mode.
+S3.884: switched to candidate mode.
+S3.885: switched to candidate mode.
+S3.886: switched to candidate mode.
+S3.887: switched to candidate mode.
+S3.888: switched to candidate mode.
+S3.889: switched to candidate mode.
+S3.890: switched to candidate mode.
+S3.891: switched to candidate mode.
+S3.892: switched to candidate mode.
+S3.893: switched to candidate mode.
+S2.871: Log { (1 1) }
+S3.894: switched to candidate mode.
+S3.895: switched to candidate mode.
+S2.871: switched to follower mode.
+S3.896: switched to candidate mode.
+ Server 3 got 2 votes 
+S3.896: switched to leader mode.
+ Server 3 got 2 votes 
+TIME_TO_SIMULATE=50
+S1.872: Log { (1 1) }
+S3.896: Log { (1 1) }
+S2.896: Log { (1 1) }
+S3.896: switched to follower mode.
+S2.896: switched to follower mode.
+S1.872: switched to follower mode.
+S3.897: switched to candidate mode.
+S3.898: switched to candidate mode.
+ Server 3 got 3 votes 
+S2.898: Log { (1 1) }
+S2.898: switched to follower mode.

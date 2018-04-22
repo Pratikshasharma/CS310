@@ -4,7 +4,7 @@ import java.util.Timer;
 import java.util.*;
 
 public class LeaderMode extends RaftMode {
-	private Timer heartbeatTimer;
+	private Timer heartbeatTimer = new Timer();
 	private int HEARTBEAT_TIMER_ID = 4;
 
 	public void go() {
@@ -13,28 +13,58 @@ public class LeaderMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			System.out.println("S" + mID + "." + term + ": switched to leader mode.");
 			
-			// schedule heartBeatTimer
-			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
-			// send heartbeats
-			this.sendHeartbeats();
-		
-					
 			//Set the term.
 			RaftResponses.setTerm(term);
-			// clear responses
-			RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
+	
+			// send heartbeats
+			this.sendHeartbeats();
+//			// clear responses
+//			RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
+			
+			// schedule heartBeatTimer
+			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
 
 		}
 	}
 
 	// helper function to send heartbeat
 	private void sendHeartbeats() {
-		// initialize entries and remote append them
-		for (int i = 1; i <= mConfig.getNumServers(); i++) {
-			Entry[] entryList = new Entry[0];
-			this.remoteAppendEntries(i, mConfig.getCurrentTerm(), mID, mLog.getLastIndex(), mLog.getLastTerm(),
-					entryList, mCommitIndex);
+		
+		int lastMatchedIndex = mLog.getLastIndex();
+		int lastMatchedIndexPointer = lastMatchedIndex;
+		
+		int repairFailed = -1;
+		
+		// loop through the servers and send them the entry
+		for(int i = 1; i <= mConfig.getNumServers();i++) {
+			while(repairFailed!=0) {
+			// add in the 
+			List <Entry> entries = new ArrayList<Entry>();
+				// add entry from the lastMatchedIndex
+			entries.add(mLog.getEntry(lastMatchedIndexPointer+1));
+			Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
+			
+			remoteAppendEntries (i, mConfig.getCurrentTerm(),mID,
+					lastMatchedIndexPointer,mLog.getEntry(lastMatchedIndexPointer).term,entriesArray,mCommitIndex);
+				
+			// get all the responses
+			int [] responses = RaftResponses.getAppendResponses(mConfig.getCurrentTerm());
+			
+			// response of server i
+			repairFailed = responses[i];
+			lastMatchedIndexPointer--;
+			
+			}
+			
+			lastMatchedIndexPointer = lastMatchedIndex;
 		}
+		
+		// initialize entries and remote append them
+//		for (int i = 1; i <= mConfig.getNumServers(); i++) {
+//			Entry[] entryList = new Entry[0];
+//			this.remoteAppendEntries(i, mConfig.getCurrentTerm(), mID, mLog.getLastIndex(), mLog.getLastTerm(),
+//					entryList, mCommitIndex);
+//		}
 	}
 
 

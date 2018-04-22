@@ -62,7 +62,7 @@ public class FollowerMode extends RaftMode {
 			int result = term;
 			
 			// return false if term < current Term
-			if(leaderTerm < term) return term;
+//			if(leaderTerm < term) return term;
 			
 //			resetTimer
 			this.timer.cancel();
@@ -71,12 +71,10 @@ public class FollowerMode extends RaftMode {
 					ELECTION_TIMEOUT_MIN;
 			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
-
 			if(leaderTerm>=term){
 				mConfig.setCurrentTerm(leaderTerm, 0);
 			}
 			
-
 			// RPC 2,3,4
 			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
@@ -91,7 +89,9 @@ public class FollowerMode extends RaftMode {
 			// reset commitIndex if leaderCommit > commitindex
 			// RPC- 5
 			if(leaderCommit > mCommitIndex) {
-				mCommitIndex = Math.min(leaderCommit,mLog.getLastIndex());
+				mCommitIndex = mLog.getLastIndex();
+			}else {
+				mCommitIndex = leaderCommit;
 			}
 			
 			return result;	
