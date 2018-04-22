@@ -32,10 +32,10 @@ public class FollowerMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			if (candidateTerm>=term 
 					&&lastLogIndex>=mLog.getLastIndex()
-					&&(mConfig.getVotedFor()==0||mConfig.getVotedFor()==candidateID)) {
+					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID))) {
 		// We will vote for candidate if all those conditions above are met.
 				
-				mConfig.setCurrentTerm(candidateTerm, candidateID);
+				mConfig.setCurrentTerm(candidateTerm, 0);
 				return 0;
 				
 			}else{
@@ -43,7 +43,6 @@ public class FollowerMode extends RaftMode {
 				return term;
 				
 			}
-			
 			
 		}
 	}
@@ -60,12 +59,42 @@ public class FollowerMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
+			int result = term;
+			
+			// return false if term < current Term
+//			if(leaderTerm < term) return term;
+			
+//			resetTimer
+			this.timer.cancel();
+			Random random = new Random();
+			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
+					ELECTION_TIMEOUT_MIN;
+			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
+			
 			if(leaderTerm>=term){
 				mConfig.setCurrentTerm(leaderTerm, 0);
-				return 0;
 			}
-			int result = term;
-			return result;
+			
+			// RPC 2,3,4
+			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
+			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
+			if(prevLogIndexTerm == prevLogTerm) {
+				mLog.insert(entries, prevLogIndex, prevLogTerm);
+				result= 0;
+			}else {
+				// log repair failed - return false
+				result= -1;
+			}
+			
+			// reset commitIndex if leaderCommit > commitindex
+			// RPC- 5
+			if(leaderCommit > mCommitIndex) {
+				mCommitIndex = mLog.getLastIndex();
+			}else {
+				mCommitIndex = leaderCommit;
+			}
+			
+			return result;	
 		}
 	}
 
