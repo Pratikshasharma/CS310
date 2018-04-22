@@ -32,7 +32,7 @@ public class FollowerMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			if (candidateTerm>=term 
 					&&lastLogIndex>=mLog.getLastIndex()
-					&&(mConfig.getVotedFor()==0||mConfig.getVotedFor()==candidateID)) {
+					&&(mConfig.getVotedFor()==0)) {
 		// We will vote for candidate if all those conditions above are met.
 				
 				mConfig.setCurrentTerm(candidateTerm, candidateID);
@@ -60,10 +60,18 @@ public class FollowerMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			
 			int result = term;
+			
 			// return false if term < current Term
-			if(leaderTerm < term) return term;
+//			if(leaderTerm < term) return term;
+			
+//			resetTimer
+			this.timer.cancel();
+			
+			Random random = new Random();
+			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
+					ELECTION_TIMEOUT_MIN;
+			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
 			if(leaderTerm>=term){
 				mConfig.setCurrentTerm(leaderTerm, 0);

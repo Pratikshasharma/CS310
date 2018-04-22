@@ -4,11 +4,11 @@ import java.util.Random;
 import java.util.Timer;
 
 public class CandidateMode extends RaftMode {
-	private Timer checkVoteTimer;
+//	private Timer checkVoteTimer;
 	private Timer electionTimeoutTimer;
-	private int CHECKVOTE_TIMER_ID = 1;
+//	private int CHECKVOTE_TIMER_ID = 1;
 	private int ELECTION_TIMER_ID = 2;
-	private int CHECK_VOTES_DURATION;
+//	private int CHECK_VOTES_DURATION;
 	private int electionTimeoutDuration;
 
 	public void go() {
@@ -33,8 +33,8 @@ public class CandidateMode extends RaftMode {
 
 			// schedule checkVotes timer
 //			this.CHECKVOTE_TIMER_ID = mID * 3;
-			this.CHECK_VOTES_DURATION = 120;
-			this.checkVoteTimer = scheduleTimer(CHECK_VOTES_DURATION, CHECKVOTE_TIMER_ID);
+//			this.CHECK_VOTES_DURATION = 120;
+//			this.checkVoteTimer = scheduleTimer(CHECK_VOTES_DURATION, CHECKVOTE_TIMER_ID);
 
 			// request votes from all other servers
 			for (int i = 1; i <= mConfig.getNumServers(); i++) {
@@ -58,11 +58,16 @@ public class CandidateMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			int vote =term;
-			if(mID == candidateID) {
-				vote = 0;
+			// vote for someone who is requesting a vote with a higher term
+			if(candidateTerm > term) {
+				mConfig.setCurrentTerm(candidateTerm, 0);
+				RaftServerImpl.setMode(new FollowerMode());
+				return 0;
+			}else if (mID == candidateID) {
+				return 0;
+			}else {
+				return term;
 			}
-			return vote;
 		}
 	}
 
@@ -81,7 +86,7 @@ public class CandidateMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			if (leaderTerm >= term) {
 				this.electionTimeoutTimer.cancel();
-				this.checkVoteTimer.cancel();
+//				this.checkVoteTimer.cancel();
 				RaftServerImpl.setMode(new FollowerMode());
 			
 			}
@@ -95,30 +100,29 @@ public class CandidateMode extends RaftMode {
 		synchronized (mLock) {
 			
 			// Count votes- check votes timeout
-			if(timerID == this.CHECKVOTE_TIMER_ID) {
 				int[] votes = RaftResponses.getVotes(mConfig.getCurrentTerm());
 				int totalVote =0;
-				for(int i =0; i <votes.length;i++ ) {
-					totalVote = (votes[i]==0) ? totalVote+1:totalVote;
-				}
-				// If won the election
-				if(totalVote > mConfig.getNumServers()/2) {
-					this.electionTimeoutTimer.cancel();
-					this.checkVoteTimer.cancel();
-					RaftServerImpl.setMode(new LeaderMode());
-					
-					
-				} else { // lost election -- restart check vote timer
-					this.checkVoteTimer.cancel();
-					this.checkVoteTimer = scheduleTimer(CHECK_VOTES_DURATION, CHECKVOTE_TIMER_ID);
-				}
 				
-				// no clear majority- restart election
-			}else if (timerID == this.ELECTION_TIMER_ID) {
-				this.electionTimeoutTimer.cancel();
-				this.checkVoteTimer.cancel();
-				go();
-			}
+				// check if you got any votes at all 
+				if(votes!=null) {
+					for(int i =0; i <votes.length;i++ ) {
+						totalVote = (votes[i]==0) ? totalVote+1:totalVote;
+					}
+					// If won the election
+					if(totalVote > mConfig.getNumServers()/2) {
+						this.electionTimeoutTimer.cancel();
+						System.out.println(" Server " + mID + " got " + totalVote+ " votes ");
+						RaftServerImpl.setMode(new LeaderMode());
+						
+					}else {
+						this.electionTimeoutTimer.cancel();
+						go();
+					}
+				
+				}else {
+					this.electionTimeoutTimer.cancel();
+					go();
+				}
 		}
 	}
 }
