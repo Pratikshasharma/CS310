@@ -61,7 +61,8 @@ public class FollowerMode extends RaftMode {
 			int result = 0;
 			
 			// return false if term < current Term
-
+		// System.out.println(" follower mode " + mID);
+		// System.out.println(" leader term " + leaderTerm + " currentTerm " + term);
 		if(leaderTerm < term) return term;
 		
 //			resetTimer
@@ -81,6 +82,9 @@ public class FollowerMode extends RaftMode {
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
 			
 			result=mLog.insert(entries, prevLogIndex, prevLogTerm);
+
+			// System.out.println(" mLog insert " + entries + " result " + result);
+			
 			if(result==-1){
 				//Repair Log.
 				return term;

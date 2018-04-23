@@ -94,6 +94,7 @@ public class CandidateMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 			
+			// System.out.println(" candidate append Entries " + mID);
 			int term = mConfig.getCurrentTerm();
 			
 			// check for leaderMode
@@ -123,7 +124,7 @@ public class CandidateMode extends RaftMode {
 					// If won the election
 					if(totalVote > mConfig.getNumServers()/2) {
 						this.electionTimeoutTimer.cancel();
-						//System.out.println(" Server " + mID + " got " + totalVote+ " votes ");
+					//System.out.println(" Server " + mID + " got " + totalVote+ " votes ");
 						RaftServerImpl.setMode(new LeaderMode());
 						
 					}else {
