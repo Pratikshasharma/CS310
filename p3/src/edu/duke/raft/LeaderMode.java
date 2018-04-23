@@ -14,7 +14,7 @@ public class LeaderMode extends RaftMode {
 			System.out.println("S" + mID + "." + term + ": switched to leader mode.");
 			
 			//Set the term.
-			RaftResponses.setTerm(term);
+			
 	
 			// send heartbeats
 			this.sendHeartbeats();
@@ -29,12 +29,11 @@ public class LeaderMode extends RaftMode {
 
 	// helper function to send heartbeat
 	private void sendHeartbeats() {
-		
+		RaftResponses.setTerm(mConfig.getCurrentTerm());
 		int lastMatchedIndex = mLog.getLastIndex();
 		int lastMatchedIndexPointer = lastMatchedIndex;
-		
 		int repairFailed = -1;
-		
+			
 		// loop through the servers and send them the entry
 		for(int i = 1; i <= mConfig.getNumServers();i++) {
 

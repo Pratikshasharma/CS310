@@ -1,28 +1,25 @@
 TIME_TO_SIMULATE=10
+S1.1: Log { (1 1) }
 S2.1: Log { (1 1) }
-S1.1: Log { (1 1)  (1 1) }
 S3.1: Log { (1 1) }
 S1.1: switched to follower mode.
-S3.1: switched to follower mode.
 S2.1: switched to follower mode.
-S1.2: switched to candidate mode.
-S2.3: switched to candidate mode.
-S3.4: switched to candidate mode.
-S2.4: switched to follower mode.
-S1.5: switched to candidate mode.
-S3.5: switched to follower mode.
+S3.1: switched to follower mode.
+S2.2: switched to candidate mode.
+S3.3: switched to candidate mode.
+S2.3: switched to follower mode.
+S1.4: switched to candidate mode.
+S3.4: switched to follower mode.
+S1.4: switched to leader mode.
+S2.5: switched to candidate mode.
 S2.6: switched to candidate mode.
-S1.7: switched to candidate mode.
-S2.7: switched to follower mode.
- Server 1 got 2 votes 
-S1.7: switched to leader mode.
+S2.7: switched to candidate mode.
 S2.8: switched to candidate mode.
 S2.9: switched to candidate mode.
-S2.10: switched to candidate mode.
-S3.7: switched to candidate mode.
-S3.10: switched to follower mode.
- Server 2 got 2 votes 
-S2.10: switched to leader mode.
+S3.5: switched to candidate mode.
+S3.6: switched to follower mode.
+S2.9: switched to leader mode.
+S3.10: switched to candidate mode.
 S3.11: switched to candidate mode.
 S3.12: switched to candidate mode.
 S3.13: switched to candidate mode.
@@ -30,18 +27,32 @@ S3.14: switched to candidate mode.
 S3.15: switched to candidate mode.
 S3.16: switched to candidate mode.
 S3.17: switched to candidate mode.
-S1.7: switched to follower mode.
 S3.18: switched to candidate mode.
+S2.9: Log { (1 1) }
 S3.19: switched to candidate mode.
+S2.9: switched to follower mode.
 S3.20: switched to candidate mode.
-S2.10: Log { (1 1) }
+S2.10: switched to candidate mode.
 S3.21: switched to candidate mode.
-S2.10: switched to follower mode.
-S3.22: switched to candidate mode.
 S2.11: switched to candidate mode.
-S2.22: switched to follower mode.
- Server 3 got 2 votes 
-S3.22: switched to leader mode.
+S3.22: switched to candidate mode.
+S3.23: switched to candidate mode.
+S2.12: switched to candidate mode.
+S3.24: switched to candidate mode.
+S2.13: switched to candidate mode.
+S3.25: switched to candidate mode.
+S2.14: switched to candidate mode.
+S3.26: switched to candidate mode.
+S2.15: switched to candidate mode.
+S3.27: switched to candidate mode.
+S2.16: switched to candidate mode.
+S3.27: switched to leader mode.
+S2.17: switched to candidate mode.
+S2.18: switched to candidate mode.
+S2.19: switched to candidate mode.
+S2.20: switched to candidate mode.
+S2.21: switched to candidate mode.
+S2.22: switched to candidate mode.
 S2.23: switched to candidate mode.
 S2.24: switched to candidate mode.
 S2.25: switched to candidate mode.
@@ -54,6 +65,21 @@ S2.31: switched to candidate mode.
 S2.32: switched to candidate mode.
 S2.33: switched to candidate mode.
 S2.34: switched to candidate mode.
-S3.33: switched to follower mode.
- Server 2 got 2 votes 
-S2.34: switched to leader mode.
+S2.35: switched to candidate mode.
+S3.34: switched to follower mode.
+S2.35: switched to leader mode.
+S3.36: switched to candidate mode.
+S3.37: switched to candidate mode.
+S3.38: switched to candidate mode.
+S3.39: switched to candidate mode.
+S3.40: switched to candidate mode.
+S3.41: switched to candidate mode.
+S3.42: switched to candidate mode.
+S3.43: switched to candidate mode.
+S3.44: switched to candidate mode.
+S3.45: switched to candidate mode.
+S3.46: switched to candidate mode.
+S3.47: switched to candidate mode.
+S3.48: switched to candidate mode.
+S3.49: switched to candidate mode.
+S3.50: switched to candidate mode.

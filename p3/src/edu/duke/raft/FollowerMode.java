@@ -79,6 +79,7 @@ public class FollowerMode extends RaftMode {
 			
 			// System.out.println(" prevLogTerm " + (mLog.getEntry(prevLogIndex).term));
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
+			
 			result=mLog.insert(entries, prevLogIndex, prevLogTerm);
 			if(result==-1){
 				//Repair Log.
