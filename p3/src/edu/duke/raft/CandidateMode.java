@@ -64,6 +64,7 @@ public class CandidateMode extends RaftMode {
 					( lastLogTerm==mLog.getLastTerm() && lastLogIndex>=mLog.getLastIndex()) ) {
 					//Change term and vote for that guy with a higher term.
 					this.electionTimeoutTimer.cancel();
+
 					mConfig.setCurrentTerm(candidateTerm, candidateID);
 					RaftServerImpl.setMode(new FollowerMode());
 					return 0;
@@ -93,6 +94,14 @@ public class CandidateMode extends RaftMode {
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) {
 		synchronized (mLock) {
+
+			// Reset timer
+			this.electionTimeoutTimer.cancel();
+			Random random = new Random();
+			electionTimeoutDuration = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN)
+					+ ELECTION_TIMEOUT_MIN;
+			this.electionTimeoutTimer = scheduleTimer(electionTimeoutDuration, ELECTION_TIMER_ID);
+
 			
 			// System.out.println(" candidate append Entries " + mID);
 			int term = mConfig.getCurrentTerm();

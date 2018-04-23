@@ -46,10 +46,16 @@ public class LeaderMode extends RaftMode {
 		for(int i = 1; i <= mConfig.getNumServers();i++) {
 			List <Entry> entries = new ArrayList<Entry>();
 
-			for(int j =nextLogIndex.get(i); j <=mLog.getLastIndex();j++){
-				entries.add(mLog.getEntry(nextLogIndex.get(j)));
-			}	
+			// for(int j =nextLogIndex.get(i-1); j <=mLog.getLastIndex();j++){
+			// 	entries.add(mLog.getEntry(nextLogIndex.get(j-1)));
+			// }	
 			
+			System.out.println(" entries " + Arrays.toString( entries.toArray()));
+			System.out.println(" nextLogIndex " + Arrays.toString(nextLogIndex.toArray()));
+
+			for(int k =0; k < nextLogIndex.size();k++){
+				System.out.println(" index " + k + " entry " + mLog.getEntry(nextLogIndex.get(k-1)));
+			}
 
 			Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
 			

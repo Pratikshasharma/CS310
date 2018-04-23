@@ -61,8 +61,8 @@ public class FollowerMode extends RaftMode {
 			int result = 0;
 			
 			// return false if term < current Term
-		// System.out.println(" follower mode " + mID);
-		// System.out.println(" leader term " + leaderTerm + " currentTerm " + term);
+		System.out.println(" follower mode " + mID);
+		System.out.println(" leader term " + leaderTerm + " currentTerm " + term);
 		if(leaderTerm < term) return term;
 		
 //			resetTimer
