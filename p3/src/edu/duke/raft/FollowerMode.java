@@ -77,11 +77,10 @@ public class FollowerMode extends RaftMode {
 			
 			// RPC 2,3,4
 			
-
 			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
 			System.out.println(" prevLogIndexTerm " + prevLogIndexTerm);
 			System.out.println(" prevLogTerm " + (mLog.getEntry(prevLogIndex).term));
-			
+
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
 			if(prevLogIndexTerm == prevLogTerm) {
 				mLog.insert(entries, prevLogIndex, prevLogTerm);
