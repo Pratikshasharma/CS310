@@ -61,8 +61,9 @@ public class FollowerMode extends RaftMode {
 			int result = 0;
 			
 			// return false if term < current Term
+
 		if(leaderTerm < term) return term;
-			
+		
 //			resetTimer
 			this.timer.cancel();
 			Random random = new Random();
@@ -75,10 +76,9 @@ public class FollowerMode extends RaftMode {
 			
 			
 			// RPC 2,3,4
-			//int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
-	
-			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
 			
+			// System.out.println(" prevLogTerm " + (mLog.getEntry(prevLogIndex).term));
+			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
 			result=mLog.insert(entries, prevLogIndex, prevLogTerm);
 			if(result==-1){
 				//Repair Log.
