@@ -32,16 +32,15 @@ public class FollowerMode extends RaftMode {
 			int term = mConfig.getCurrentTerm();
 			if (candidateTerm>=term 
 					&&lastLogIndex>=mLog.getLastIndex()
-					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID))) {
+					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID)) ) {
 		// We will vote for candidate if all those conditions above are met.
 				
-				mConfig.setCurrentTerm(candidateTerm, 0);
+				mConfig.setCurrentTerm(candidateTerm, candidateID);
 				return 0;
 				
 			}else{
 				mConfig.setCurrentTerm(candidateTerm, 0); //Upgrade term if we have to and don't vote
 				return term;
-				
 			}
 			
 		}
@@ -59,10 +58,10 @@ public class FollowerMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-			int result = term;
+			int result = 0;
 			
 			// return false if term < current Term
-//			if(leaderTerm < term) return term;
+		if(leaderTerm < term) return term;
 			
 //			resetTimer
 			this.timer.cancel();
@@ -71,30 +70,28 @@ public class FollowerMode extends RaftMode {
 					ELECTION_TIMEOUT_MIN;
 			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
-			if(leaderTerm>=term){
-				mConfig.setCurrentTerm(leaderTerm, 0);
-			}
+			
+			mConfig.setCurrentTerm(leaderTerm, 0);
+			
 			
 			// RPC 2,3,4
-			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
+			//int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
+	
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
-			if(prevLogIndexTerm == prevLogTerm) {
-				mLog.insert(entries, prevLogIndex, prevLogTerm);
-				result= 0;
-			}else {
-				// log repair failed - return false
-				result= -1;
-			}
 			
+			result=mLog.insert(entries, prevLogIndex, prevLogTerm);
+			if(result==-1){
+				//Repair Log.
+				return term;
+				
+			}
 			// reset commitIndex if leaderCommit > commitindex
-			// RPC- 5
-			if(leaderCommit > mCommitIndex) {
-				mCommitIndex = mLog.getLastIndex();
-			}else {
-				mCommitIndex = leaderCommit;
+			if(leaderCommit>mCommitIndex){
+				mCommitIndex=Math.min(leaderCommit, result);
 			}
 			
-			return result;	
+			
+			return 0;	
 		}
 	}
 

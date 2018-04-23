@@ -92,7 +92,7 @@ public class LeaderMode extends RaftMode {
 				// candidate with more recent log - cancel timer, change to follower mode and vote 
 				if( lastLogTerm >= mLog.getLastTerm() ) {
 					this.heartbeatTimer.cancel();
-					mConfig.setCurrentTerm(candidateTerm, 0);
+					mConfig.setCurrentTerm(candidateTerm, candidateTerm);
 					RaftServerImpl.setMode(new FollowerMode());
 					vote= 0;
 				}else { // candidate has the older log - dont vote

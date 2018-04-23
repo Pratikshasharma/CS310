@@ -69,8 +69,7 @@ public class CandidateMode extends RaftMode {
 					return 0;
 					
 				}else{
-					//Not Up to Date so switch to that term but don't vote yet.
-//					this.electionTimeoutTimer.cancel();
+					//this.electionTimeoutTimer.cancel();
 					mConfig.setCurrentTerm(candidateTerm, 0);
 					return term;
 				}
