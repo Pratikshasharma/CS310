@@ -57,25 +57,29 @@ public class CandidateMode extends RaftMode {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
-
-			int vote =term;
-			if(mID == candidateID) {
-				vote = 0;
-			}
-			return vote;
-
 			// vote for someone who is requesting a vote with a higher term
 			if(candidateTerm > term) {
-				this.electionTimeoutTimer.cancel();
-				mConfig.setCurrentTerm(candidateTerm, 0);
-				RaftServerImpl.setMode(new FollowerMode());
-				return 0;
+				//Checking if up to date before voting for them.
+				if (lastLogTerm>mLog.getLastTerm()||
+					( lastLogTerm==mLog.getLastTerm() && lastLogIndex>=mLog.getLastIndex()) ) {
+					//Change term and vote for that guy with a higher term.
+					this.electionTimeoutTimer.cancel();
+					mConfig.setCurrentTerm(candidateTerm, candidateID);
+					RaftServerImpl.setMode(new FollowerMode());
+					return 0;
+					
+				}else{
+					//Not Up to Date so switch to that term but don't vote yet.
+//					this.electionTimeoutTimer.cancel();
+					mConfig.setCurrentTerm(candidateTerm, 0);
+					return term;
+				}
+				
 			}else if (mID == candidateID) {
 				return 0;
 			}else {
 				return term;
 			}
-
 		}
 	}
 
