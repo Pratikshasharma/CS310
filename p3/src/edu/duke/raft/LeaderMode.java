@@ -37,11 +37,21 @@ public class LeaderMode extends RaftMode {
 		
 		// loop through the servers and send them the entry
 		for(int i = 1; i <= mConfig.getNumServers();i++) {
+
 			while(repairFailed!=0) {
+
 			// add in the 
 			List <Entry> entries = new ArrayList<Entry>();
+
 				// add entry from the lastMatchedIndex
-			entries.add(mLog.getEntry(lastMatchedIndexPointer+1));
+			System.out.println("lastMatchedIndex " + (lastMatchedIndexPointer));
+			System.out.println("single entry " + mLog.getEntry(lastMatchedIndexPointer));
+			
+
+			entries.add(mLog.getEntry(lastMatchedIndexPointer));
+
+			System.out.println(" entries list " + Arrays.toString(entries.toArray()));
+
 			Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
 			
 			int prevLogTerm = 0;
@@ -58,7 +68,16 @@ public class LeaderMode extends RaftMode {
 			
 			// response of server i
 			repairFailed = responses[i];
+
+
 			lastMatchedIndexPointer--;
+
+			System.out.print(" Repair Failed " + mID );
+			System.out.println(Arrays.toString(entriesArray));
+			System.out.println("response " + repairFailed);
+
+			System.out.println("responses " + Arrays.toString(responses));
+
 			
 			}
 			
@@ -92,7 +111,7 @@ public class LeaderMode extends RaftMode {
 				// candidate with more recent log - cancel timer, change to follower mode and vote 
 				if( lastLogTerm >= mLog.getLastTerm() ) {
 					this.heartbeatTimer.cancel();
-					mConfig.setCurrentTerm(candidateTerm, 0);
+					mConfig.setCurrentTerm(candidateTerm, candidateID);
 					RaftServerImpl.setMode(new FollowerMode());
 					vote= 0;
 				}else { // candidate has the older log - dont vote

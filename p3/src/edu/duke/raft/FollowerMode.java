@@ -35,7 +35,7 @@ public class FollowerMode extends RaftMode {
 					&&((mConfig.getVotedFor()==0) || (mConfig.getVotedFor()==candidateID))) {
 		// We will vote for candidate if all those conditions above are met.
 				
-				mConfig.setCurrentTerm(candidateTerm, 0);
+				mConfig.setCurrentTerm(candidateTerm, candidateID);
 				return 0;
 				
 			}else{
@@ -62,7 +62,7 @@ public class FollowerMode extends RaftMode {
 			int result = term;
 			
 			// return false if term < current Term
-//			if(leaderTerm < term) return term;
+			if(leaderTerm < term) return term;
 			
 //			resetTimer
 			this.timer.cancel();
@@ -76,11 +76,16 @@ public class FollowerMode extends RaftMode {
 			}
 			
 			// RPC 2,3,4
+			
+
 			int prevLogIndexTerm = mLog.getEntry(prevLogIndex).term;
+			System.out.println(" prevLogIndexTerm " + prevLogIndexTerm);
+			System.out.println(" prevLogTerm " + (mLog.getEntry(prevLogIndex).term));
+			
 			//check if log does not contain an entry at prevLogIndex whose term matches prevLogTerm
 			if(prevLogIndexTerm == prevLogTerm) {
 				mLog.insert(entries, prevLogIndex, prevLogTerm);
-				result= 0;
+				return 0;
 			}else {
 				// log repair failed - return false
 				result= -1;
