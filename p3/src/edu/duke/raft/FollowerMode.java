@@ -6,18 +6,27 @@ import java.util.Timer;
 public class FollowerMode extends RaftMode {
 	private int TIMER_ID = 3;
 	private Timer timer;
+	private long startTime;
 
 	public void go() {
 
 		synchronized (mLock) {
+
+			int term = mConfig.getCurrentTerm();
+			System.out.println("S" + mID + "." + term + ": switched to follower mode.");
+
 			// schedule timer
 			Random random = new Random();
 			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
 					ELECTION_TIMEOUT_MIN;
-			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
-			int term = mConfig.getCurrentTerm();
-			System.out.println("S" + mID + "." + term + ": switched to follower mode.");
+			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
+
+			startTime = System.currentTimeMillis();
+
+			// System.out.println("follower timeout " + mID + " " + electionTimeOut);
+
+			
 		}
 	}
 
@@ -61,8 +70,8 @@ public class FollowerMode extends RaftMode {
 			int result = 0;
 			
 			// return false if term < current Term
-		System.out.println(" follower mode " + mID);
-		System.out.println(" leader term " + leaderTerm + " currentTerm " + term);
+		// System.out.println(" follower mode " + mID);
+		// System.out.println(" leader term " + leaderTerm + " currentTerm " + term);
 		if(leaderTerm < term) return term;
 		
 //			resetTimer
@@ -70,6 +79,10 @@ public class FollowerMode extends RaftMode {
 			Random random = new Random();
 			int electionTimeOut = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN) + 
 					ELECTION_TIMEOUT_MIN;
+
+			// System.out.println("follower timeout " + mID + " " + electionTimeOut);
+
+
 			timer = this.scheduleTimer(electionTimeOut, TIMER_ID);
 			
 			
@@ -104,7 +117,9 @@ public class FollowerMode extends RaftMode {
 		// every single class has go- which is called for each mode
 		synchronized (mLock) {
 			// cancel timer and become candidate
+
 			if(timerID == this.TIMER_ID) {// check timer id?
+				// System.out.println(" time " + (System.currentTimeMillis() - startTime));
 				timer.cancel();
 				// increment the term when you convert from follower to candidate- can be done
 				// in the candidate

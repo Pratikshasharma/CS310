@@ -6,14 +6,20 @@ import java.util.*;
 public class LeaderMode extends RaftMode {
 	private Timer heartbeatTimer = new Timer();
 	private int HEARTBEAT_TIMER_ID = 4;
-	private List<Integer> nextLogIndex = new ArrayList<Integer>();
+	private Map <Integer,Integer> nextIndexMap = new HashMap<Integer,Integer>();
 
 	public void go() {
 		synchronized (mLock) {
 			
 			int term = mConfig.getCurrentTerm();
-			System.out.println("S" + mID + "." + term + ": switched to leader mode.");
 			
+			System.out.println("S" + mID + "." + term + ": switched to leader mode.");
+
+			// set term 
+			RaftResponses.setTerm(term);
+			RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
+			RaftResponses.clearVotes(term);
+
 			this.populateNextLogIndex();
 			// send heartbeats
 			this.sendHeartbeats();
@@ -21,51 +27,90 @@ public class LeaderMode extends RaftMode {
 			
 			// schedule heartBeatTimer
 			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+			
 
 		}
 	}
 
 	private void populateNextLogIndex(){
+		int lastIndex = mLog.getLastIndex();
 		for(int i=1; i <= mConfig.getNumServers();i++){
-			nextLogIndex.add(mLog.getLastIndex()+1);
+			nextIndexMap.put(i,lastIndex+1);
 		}
 	}
 
 	// helper function to send heartbeat
 	private void sendHeartbeats() {
-		int term = mConfig.getCurrentTerm();
-		//Set the term.
-		RaftResponses.setTerm(term);
-		RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
-
-		
 		// int repairFailed = -1;
 		int response = -1;
 
 		// loop through the servers and send them the entry
 		for(int i = 1; i <= mConfig.getNumServers();i++) {
-			List <Entry> entries = new ArrayList<Entry>();
+			if(i !=mID){
+				List <Entry> entries = new ArrayList<Entry>();
 
-			// for(int j =nextLogIndex.get(i-1); j <=mLog.getLastIndex();j++){
-			// 	entries.add(mLog.getEntry(nextLogIndex.get(j-1)));
-			// }	
-			
-			System.out.println(" entries " + Arrays.toString( entries.toArray()));
-			System.out.println(" nextLogIndex " + Arrays.toString(nextLogIndex.toArray()));
 
-			for(int k =0; k < nextLogIndex.size();k++){
-				System.out.println(" index " + k + " entry " + mLog.getEntry(nextLogIndex.get(k-1)));
-			}
+				int startIndex = nextIndexMap.get(i);
+				int endIndex = mLog.getLastIndex();
 
-			Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
+				System.out.println( " Start " + startIndex + " End " + endIndex);
+
+
+				if(startIndex <= endIndex){
+					int entriesToSend = endIndex - startIndex+1;
+
+					for(int k = 0; k < entriesToSend;k++){
+						System.out.println(" log entry " + mLog.getEntry(nextIndexMap.get(k + startIndex)));
+						entries.add(mLog.getEntry(nextIndexMap.get(k + startIndex)));
+					}		
+				}
+				int prevLogTerm = mLog.getEntry(startIndex-1).term;
+
+				Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
+
+				System.out.println(" entries  " + Arrays.toString( entries.toArray()));
+				System.out.println("prev log Term " + prevLogTerm);
 			
-			int prevLogTerm = mLog.getLastTerm();
-	
-			remoteAppendEntries (i, mConfig.getCurrentTerm(),mID,
-					(nextLogIndex.get(i)-1),prevLogTerm,entriesArray,mCommitIndex);
-			
+				remoteAppendEntries (i, 
+					mConfig.getCurrentTerm(),
+					mID,
+					(startIndex -1 ), // prevLogIndex
+					prevLogTerm, // prevLogTerm
+					entriesArray,mCommitIndex);
 			}
 		}
+		System.out.println(" Completed leader sendHeartbeats");
+
+	}
+			
+
+	private int getResponse(){
+		int currentTerm = mConfig.getCurrentTerm();
+		int[] appendResponses = RaftResponses.getAppendResponses(currentTerm);
+		
+		for(int i =1; i < mConfig.getNumServers();i++){
+			if(i !=mID){
+				if(appendResponses[i] == 0){
+					nextIndexMap.put(i,mLog.getLastIndex()+1);
+					
+				}else if (appendResponses[i] > 0){
+					int prevLogIndex = nextIndexMap.get(i);
+					// decrease index term
+					nextIndexMap.put(i,prevLogIndex -1);
+					if(appendResponses[i] > currentTerm){
+						currentTerm = appendResponses[i];
+					}
+				}
+			}
+		}
+
+			RaftResponses.clearAppendResponses(currentTerm);
+			return currentTerm;
+	}
+
+
+	
+
 
 
 	// @param candidate’s term
@@ -78,6 +123,8 @@ public class LeaderMode extends RaftMode {
 		synchronized (mLock) {
 			int term = mConfig.getCurrentTerm();
 			int vote = 0;
+
+			// System.out.println(" candidate " + candidateID + " term  " + candidateTerm);
 			// reject vote
 			if(candidateTerm <= term) vote= term;
 			
@@ -87,6 +134,9 @@ public class LeaderMode extends RaftMode {
 				if( lastLogTerm >= mLog.getLastTerm() ) {
 					this.heartbeatTimer.cancel();
 					mConfig.setCurrentTerm(candidateTerm, candidateID);
+					// System.out.println(" server " + mID + " changed to follower from leader ");
+					// System.out.println(" lastLogTerm " + lastLogTerm + " mLog.getLastTerm " + mLog.getLastTerm());
+				
 					RaftServerImpl.setMode(new FollowerMode());
 					vote= 0;
 				}else { // candidate has the older log - dont vote
@@ -119,11 +169,13 @@ public class LeaderMode extends RaftMode {
 			//Doing it just to be safe. Don't think a leader would replicate on itself.
 			if(leaderTerm>term){
 			    this.heartbeatTimer.cancel();
+			    RaftResponses.setTerm(leaderTerm);
 			    RaftServerImpl.setMode(new FollowerMode());
+
 			    // System.out.println(" leaderTerm is greater " + mID);
 			    return 0;
 			}
-			if (leaderTerm==term) {
+			if (mID==leaderID) {
 				return 0;
 			}
 			
@@ -136,12 +188,23 @@ public class LeaderMode extends RaftMode {
 		synchronized (mLock) {
 			// heartbeat timer expired
 			if(timerID == this.HEARTBEAT_TIMER_ID) {
-				this.heartbeatTimer.cancel();
-				// reschedule heartBeatTimer
-				heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+				// restart timer
+				int response = this.getResponse();
+
+				if(response > mConfig.getCurrentTerm()){
+
+					// Convert to follower
+					this.heartbeatTimer.cancel();
+					RaftServerImpl.setMode(new LeaderMode());
+				}
 				
 				// send heartbeats
 			    this.sendHeartbeats();
+			    // reset timer
+			    this.heartbeatTimer.cancel();
+				// reschedule heartBeatTimer
+				heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+
 			}
 		}
 	}

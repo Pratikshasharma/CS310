@@ -2,30 +2,11 @@
 NUM_SERVERS=3
 
 # Test assumes the following .config values for ELECTION_TIMEOUT_OVERRIDE: 
-# S1 (1200), S2 (600), S3 (300)
+# S1 (300), S2 (1600), S3 (2400)
 
 start_servers $NUM_SERVERS
 
-sleep 1
-pause_server 3
-
-sleep 1
-
-resume_server 3
-
-sleep 1
-
-fail_server 2
-
-sleep 1
-
-restart_server 2
-
-fail_server 1
-
-sleep 1
-
-restart_server 1
-
+# wait for S3 to become leader
 sleep 5
 
+# END TEST

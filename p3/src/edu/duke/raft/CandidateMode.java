@@ -95,13 +95,6 @@ public class CandidateMode extends RaftMode {
 			int leaderCommit) {
 		synchronized (mLock) {
 
-			// Reset timer
-			this.electionTimeoutTimer.cancel();
-			Random random = new Random();
-			electionTimeoutDuration = random.nextInt(ELECTION_TIMEOUT_MAX - ELECTION_TIMEOUT_MIN)
-					+ ELECTION_TIMEOUT_MIN;
-			this.electionTimeoutTimer = scheduleTimer(electionTimeoutDuration, ELECTION_TIMER_ID);
-
 			
 			// System.out.println(" candidate append Entries " + mID);
 			int term = mConfig.getCurrentTerm();
