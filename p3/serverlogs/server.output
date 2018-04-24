@@ -1,5 +1,6 @@
 TIME_TO_SIMULATE=10
 <<<<<<< HEAD
+<<<<<<< HEAD
 S1.1: Log { (1 1) }
 S2.1: Log { (1 1) }
 =======
@@ -176,142 +177,121 @@ S1.40: switched to candidate mode.
 S3.40: switched to follower mode.
 S1.40: switched to leader mode.
  follower mode 2 leader appendEntries 1 40 40
+=======
+S2.861: Log { (1 1)  (1 3)  (1 6) }
+S1.1: Log { (1 1)  (1 2)  (1 3) }
+S3.1: Log { (1 1)  (1 2)  (1 6) }
+S3.1: switched to follower mode.
+S2.861: switched to follower mode.
+S1.1: switched to follower mode.
+S3.2: switched to candidate mode.
+S3.863: switched to follower mode.
+S2.864: switched to candidate mode.
+S1.864: switched to candidate mode.
+S3.865: switched to candidate mode.
+S2.865: switched to follower mode.S1.865: switched to follower mode.
+>>>>>>> c2445106f950a3ee10b943d6251bcbce34f60edb
 
- leader term 40 currentTerm 40
-RaftLog: index and term mismatch, could not insert new log entries.
- mLog insert [Ledu.duke.raft.Entry;@61dfede1 result -1
-S3.41: switched to candidate mode.
-S1.41: switched to follower mode.
-S1.42: switched to candidate mode.
-S3.42: switched to follower mode.
-S2.43: switched to candidate mode.
-S3.44: switched to candidate mode.
-S2.44: switched to follower mode.
-S1.45: switched to candidate mode.
-S3.45: switched to follower mode.
-S3.46: switched to candidate mode.
-S1.45: switched to leader mode.
-S1.46: switched to follower mode.
-S2.47: switched to candidate mode.
- candidate append Entries 2
-S3.47: switched to follower mode.
- follower mode 1
- leader term 45 currentTerm 46
-S3.48: switched to candidate mode.
-S2.47: switched to leader mode.
- leader appendEntries 2 47 47
- follower mode 1
- leader term 47 currentTerm 47
- mLog insert [Ledu.duke.raft.Entry;@67a38843 result 0
-S2.48: switched to follower mode.
-S2.49: switched to candidate mode.
-S3.49: switched to follower mode.
-S1.50: switched to candidate mode.
-S2.50: switched to follower mode.
-S2.51: switched to candidate mode.
-S1.51: switched to follower mode.
-S3.51: switched to candidate mode.
-S1.52: switched to candidate mode.
-S2.52: switched to follower mode.
-S3.52: switched to follower mode.
-S1.52: switched to leader mode.
- leader appendEntries 1 52 52
- follower mode 2
- leader term 52 currentTerm 52
- mLog insert [Ledu.duke.raft.Entry;@77c68b58 result 0
-S3.53: switched to candidate mode.
-S1.53: switched to follower mode.
-S2.54: switched to candidate mode.
-S3.54: switched to follower mode.
-S1.55: switched to candidate mode.
-S2.55: switched to follower mode.
-S3.56: switched to candidate mode.
-S1.56: switched to follower mode.
-S2.57: switched to candidate mode.
-S3.57: switched to follower mode.
-S1.58: switched to candidate mode.
-S2.58: switched to follower mode.
-S3.59: switched to candidate mode.
-S1.59: switched to follower mode.
-S2.60: switched to candidate mode.
-S3.60: switched to follower mode.
-S1.61: switched to candidate mode.
-S2.61: switched to follower mode.
-S3.62: switched to candidate mode.
-S1.62: switched to follower mode.
-S2.63: switched to candidate mode.
-S3.63: switched to follower mode.
-S1.64: switched to candidate mode.
-S2.64: switched to follower mode.
-S3.65: switched to candidate mode.
-S1.65: switched to follower mode.
-S2.66: switched to candidate mode.
-S3.66: switched to follower mode.
-S1.67: switched to candidate mode.
-S2.67: switched to follower mode.
-S3.68: switched to candidate mode.
-S1.68: switched to follower mode.
-S2.69: switched to candidate mode.
-S3.69: switched to follower mode.
-S2.69: switched to leader mode.S1.70: switched to candidate mode.
+S1.866: switched to candidate mode.
+S3.866: switched to follower mode.
+S2.867: switched to candidate mode.
+S1.867: switched to follower mode.
+S2.867: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+S3.868: switched to candidate mode.
+S2.868: switched to follower mode.
+S1.869: switched to candidate mode.
+S3.869: switched to follower mode.
+S2.870: switched to candidate mode.
+S1.870: switched to follower mode.
+S2.870: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1S3.871: switched to candidate mode.
 
-S3.70: switched to candidate mode.
-S2.70: switched to follower mode. candidate append Entries 1
+ Completed leader sendHeartbeats
+S2.871: switched to follower mode.
+S1.872: switched to candidate mode.
+S3.872: switched to follower mode.
+S3.873: switched to candidate mode.
+S1.873: switched to follower mode.
+S2.874: switched to candidate mode.
+S3.874: switched to follower mode.
+S1.875: switched to candidate mode.
+S2.875: switched to follower mode.
+S3.876: switched to candidate mode.
+S1.876: switched to follower mode.
+S2.877: switched to candidate mode.
+S3.876: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+S3.877: switched to follower mode.
+S1.878: switched to candidate mode.
+S2.878: switched to follower mode.
+S1.878: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+S3.879: switched to candidate mode.
+S1.879: switched to follower mode.
+S1.880: switched to candidate mode.
+S3.880: switched to follower mode.
+S2.881: switched to candidate mode.
+S1.881: switched to follower mode.
+S3.882: switched to candidate mode.
+S2.881: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+S2.882: switched to follower mode.
+S1.883: switched to candidate mode.
+S3.883: switched to follower mode.
+S3.884: switched to candidate mode.
+S2.884: switched to candidate mode.
+S1.884: switched to follower mode.
+S2.884: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+S3.884: switched to follower mode.
+S1.885: switched to candidate mode.
+S2.885: switched to follower mode.
+S3.886: switched to candidate mode.S2.886: switched to candidate mode.
 
- follower mode 2
- leader term 69 currentTerm 70
-S1.70: switched to leader mode.
- leader appendEntries 1 70 70
- follower mode 2
- leader term 70 currentTerm 70
- mLog insert [Ledu.duke.raft.Entry;@6968d0a4 result 0
-S3.71: switched to candidate mode.
-S1.71: switched to follower mode.
-S2.72: switched to candidate mode.
-S3.72: switched to follower mode.
-S1.73: switched to candidate mode.
-S2.73: switched to follower mode.
-S3.74: switched to candidate mode.
-S1.74: switched to follower mode.
-S2.75: switched to candidate mode.
-S3.75: switched to follower mode.
-S2.75: switched to leader mode.
- leader appendEntries 2 75 75 follower mode 1
+S1.886: switched to follower mode.
+S1.887: switched to candidate mode.
+S3.887: switched to candidate mode.S2.887: switched to follower mode.
 
- leader term 75 currentTerm 75
- mLog insert [Ledu.duke.raft.Entry;@542aa9e7 result 0
-S3.76: switched to candidate mode.
-S2.76: switched to follower mode.
-S1.77: switched to candidate mode.
-S3.77: switched to follower mode.
-S2.78: switched to candidate mode.
-S1.78: switched to follower mode.
-S1.79: switched to candidate mode.
-S2.79: switched to follower mode.
-S3.79: switched to candidate mode.
-S3.80: switched to candidate mode.
-S2.80: switched to candidate mode.
-S1.80: switched to follower mode.
-S1.81: switched to candidate mode.
-S2.81: switched to candidate mode.
-S3.81: switched to follower mode.
-S1.81: switched to leader mode.
- leader appendEntries 1 81 81
-S2.82: switched to candidate mode.
- candidate append Entries 2
-S1.82: switched to follower mode.
-S3.83: switched to candidate mode.
-S2.83: switched to follower mode.
-S1.84: switched to candidate mode.
-S3.84: switched to follower mode.
-S2.85: switched to candidate mode.
-S1.85: switched to follower mode.
-S3.86: switched to candidate mode.
-S2.86: switched to follower mode.
-S3.86: switched to leader mode.
- follower mode 2
- follower mode 1 leader term 86 currentTerm 86
+S2.888: switched to candidate mode.
+S1.888: switched to follower mode.S3.888: switched to follower mode.
 
+<<<<<<< HEAD
  leader term 86 currentTerm 86
  mLog insert [Ledu.duke.raft.Entry;@379b2317 result 0
  mLog insert [Ledu.duke.raft.Entry;@3cdca61d result 0
@@ -338,3 +318,503 @@ S1.95: switched to candidate mode.
 S2.95: switched to candidate mode.
 S3.95: switched to follower mode.
 >>>>>>> 061da1c9065bf1c98d750337d619a21b10565dd9
+=======
+S2.888: switched to leader mode.
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Start 3 End 2
+ entries  []
+prev log Term 1
+ Completed leader sendHeartbeats
+>>>>>>> c2445106f950a3ee10b943d6251bcbce34f60edb
