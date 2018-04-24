@@ -20,7 +20,7 @@ public class LeaderMode extends RaftMode {
 			RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
 			RaftResponses.clearVotes(term);
 
-			this.populateNextLogIndex();
+			// this.populateNextLogIndex();
 			// send heartbeats
 			this.sendHeartbeats();
 
@@ -32,81 +32,60 @@ public class LeaderMode extends RaftMode {
 		}
 	}
 
-	private void populateNextLogIndex(){
-		int lastIndex = mLog.getLastIndex();
-		for(int i=1; i <= mConfig.getNumServers();i++){
-			nextIndexMap.put(i,lastIndex+1);
-		}
-	}
+	// private void populateNextLogIndex(){
+	// 	int lastIndex = mLog.getLastIndex();
+	// 	for(int i=1; i <= mConfig.getNumServers();i++){
+	// 		nextIndexMap.put(i,lastIndex+1);
+	// 	}
+	// }
 
 	// helper function to send heartbeat
+
 	private void sendHeartbeats() {
-		// int repairFailed = -1;
-		int response = -1;
-
+		List<Entry> leaderEntries = new ArrayList<Entry>();
+		int lastIndex = mLog.getLastIndex();
+		for (int i = 0; i < lastIndex + 1; i++) {
+			leaderEntries.add(mLog.getEntry(i));
+		}
+		Entry[] entriesArray = leaderEntries.toArray(new Entry[leaderEntries.size()]);
 		// loop through the servers and send them the entry
-		for(int i = 1; i <= mConfig.getNumServers();i++) {
-			if(i !=mID){
-				List <Entry> entries = new ArrayList<Entry>();
+		for (int i = 1; i <= mConfig.getNumServers(); i++) {
 
+			remoteAppendEntries(i, mConfig.getCurrentTerm(), mID, -1, // prevLogIndex
+					-1, // prevLogTerm
+					entriesArray, mCommitIndex);
 
-				int startIndex = nextIndexMap.get(i);
-				int endIndex = mLog.getLastIndex();
-
-				System.out.println( " Start " + startIndex + " End " + endIndex);
-
-
-				if(startIndex <= endIndex){
-					int entriesToSend = endIndex - startIndex+1;
-
-					for(int k = 0; k < entriesToSend;k++){
-						System.out.println(" log entry " + mLog.getEntry(nextIndexMap.get(k + startIndex)));
-						entries.add(mLog.getEntry(nextIndexMap.get(k + startIndex)));
-					}		
-				}
-				int prevLogTerm = mLog.getEntry(startIndex-1).term;
-
-				Entry[] entriesArray = entries.toArray(new Entry[entries.size()]);
-
-				System.out.println(" entries  " + Arrays.toString( entries.toArray()));
-				System.out.println("prev log Term " + prevLogTerm);
-			
-				remoteAppendEntries (i, 
-					mConfig.getCurrentTerm(),
-					mID,
-					(startIndex -1 ), // prevLogIndex
-					prevLogTerm, // prevLogTerm
-					entriesArray,mCommitIndex);
-			}
 		}
-		System.out.println(" Completed leader sendHeartbeats");
 
 	}
-			
-
-	private int getResponse(){
-		int currentTerm = mConfig.getCurrentTerm();
-		int[] appendResponses = RaftResponses.getAppendResponses(currentTerm);
 		
-		for(int i =1; i < mConfig.getNumServers();i++){
-			if(i !=mID){
-				if(appendResponses[i] == 0){
-					nextIndexMap.put(i,mLog.getLastIndex()+1);
-					
-				}else if (appendResponses[i] > 0){
-					int prevLogIndex = nextIndexMap.get(i);
-					// decrease index term
-					nextIndexMap.put(i,prevLogIndex -1);
-					if(appendResponses[i] > currentTerm){
-						currentTerm = appendResponses[i];
-					}
-				}
-			}
-		}
 
-			RaftResponses.clearAppendResponses(currentTerm);
-			return currentTerm;
-	}
+			
+
+	// private int getResponse(){
+	// 	int currentTerm = mConfig.getCurrentTerm();
+	// 	int[] appendResponses = RaftResponses.getAppendResponses(currentTerm);
+		
+	// 	for(int i =1; i < mConfig.getNumServers();i++){
+	// 		if(i !=mID){
+	// 			if(appendResponses[i] == 0){
+	// 				nextIndexMap.put(i,mLog.getLastIndex()+1);
+					
+	// 			}else if (appendResponses[i] > 0){
+	// 				int prevLogIndex = nextIndexMap.get(i);
+	// 				// decrease index term
+	// 				nextIndexMap.put(i,prevLogIndex -1);
+
+	// 				if(appendResponses[i] > currentTerm){
+	// 					currentTerm = appendResponses[i];
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 		RaftResponses.clearAppendResponses(currentTerm);
+	// 		return currentTerm;
+	// }
 
 
 	
@@ -184,28 +163,59 @@ public class LeaderMode extends RaftMode {
 	}
 
 	// @param id of the timer that timed out
+	// public void handleTimeout(int timerID) {
+	// 	synchronized (mLock) {
+	// 		// heartbeat timer expired
+	// 		if(timerID == this.HEARTBEAT_TIMER_ID) {
+	// 			// restart timer
+	// 			int response = this.getResponse();
+
+	// 			if(response > mConfig.getCurrentTerm()){
+
+	// 				// Convert to follower
+	// 				this.heartbeatTimer.cancel();
+	// 				RaftServerImpl.setMode(new FollowerMode());
+	// 			}
+				
+	// 			// send heartbeats
+	// 		    this.sendHeartbeats();
+	// 		    // reset timer
+	// 		    this.heartbeatTimer.cancel();
+	// 			// reschedule heartBeatTimer
+	// 			heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
+
+	// 		}
+	// 	}
+	// }
+
+
 	public void handleTimeout(int timerID) {
 		synchronized (mLock) {
 			// heartbeat timer expired
-			if(timerID == this.HEARTBEAT_TIMER_ID) {
+			if (timerID == this.HEARTBEAT_TIMER_ID) {
+				int currTerm = mConfig.getCurrentTerm();
 				// restart timer
-				int response = this.getResponse();
+				int[] appendResponses = RaftResponses.getAppendResponses(currTerm);
+				for (int i = 0; i  < appendResponses.length; i++) {
 
-				if(response > mConfig.getCurrentTerm()){
-
-					// Convert to follower
-					this.heartbeatTimer.cancel();
-					RaftServerImpl.setMode(new LeaderMode());
+					if (appendResponses[i] > currTerm) {
+						this.heartbeatTimer.cancel();
+						RaftServerImpl.setMode(new FollowerMode());
+						
+					}
 				}
-				
-				// send heartbeats
-			    this.sendHeartbeats();
-			    // reset timer
-			    this.heartbeatTimer.cancel();
+
+				RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
+
+				this.sendHeartbeats();
+
+				// Reset HeartBeat timer
+				this.heartbeatTimer.cancel();
 				// reschedule heartBeatTimer
 				heartbeatTimer = this.scheduleTimer(HEARTBEAT_INTERVAL, this.HEARTBEAT_TIMER_ID);
-
 			}
+
 		}
 	}
+
 }
