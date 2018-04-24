@@ -71,6 +71,12 @@ public class LeaderMode extends RaftMode {
 	// 			if(appendResponses[i] == 0){
 	// 				nextIndexMap.put(i,mLog.getLastIndex()+1);
 					
+
+	// 			}else if (appendResponses[i] > 0){
+	// 				int prevLogIndex = nextIndexMap.get(i);
+	// 				// decrease index term
+	// 				nextIndexMap.put(i,prevLogIndex -1);
+
 	// 			}else if (appendResponses[i] > 0){
 	// 				int prevLogIndex = nextIndexMap.get(i);
 	// 				// decrease index term
@@ -203,7 +209,6 @@ public class LeaderMode extends RaftMode {
 						RaftServerImpl.setMode(new FollowerMode());
 						
 					}
-				}
 
 				RaftResponses.clearAppendResponses(mConfig.getCurrentTerm());
 
@@ -219,3 +224,5 @@ public class LeaderMode extends RaftMode {
 	}
 
 }
+}
+

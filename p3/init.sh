@@ -6,4 +6,4 @@ rm ./serverlogs/2.config
 rm ./serverlogs/3.config
 rm ./serverlogs/server.output
 
-bin/runtest.sh 10 tests/sampletest_all.txt 2> /dev/null
+bin/runtest.sh 10 tests/sampletest.txt 2> /dev/null
